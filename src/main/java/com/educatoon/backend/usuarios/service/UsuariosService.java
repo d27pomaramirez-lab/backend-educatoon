@@ -1,0 +1,92 @@
+
+package com.educatoon.backend.usuarios.service;
+
+import com.educatoon.backend.usuarios.dto.RegistroEstudianteRequest;
+import com.educatoon.backend.usuarios.model.Estudiante;
+import com.educatoon.backend.usuarios.model.Perfil;
+import com.educatoon.backend.usuarios.model.Rol;
+import com.educatoon.backend.usuarios.model.Usuario;
+import com.educatoon.backend.usuarios.repository.EstudianteRepository;
+import com.educatoon.backend.usuarios.repository.PerfilRepository;
+import com.educatoon.backend.usuarios.repository.RolRepository;
+import com.educatoon.backend.usuarios.repository.UsuarioRepository;
+import jakarta.transaction.Transactional;
+import java.util.Date;
+import java.util.List;
+import java.util.UUID;
+import org.springframework.beans.factory.annotation.Autowired;
+import org.springframework.security.crypto.password.PasswordEncoder;
+
+/**
+ *
+ * @author Diego
+ */
+public class UsuariosService {
+    @Autowired private UsuarioRepository usuarioRepository;
+    @Autowired private RolRepository rolRepository;    
+    @Autowired private PerfilRepository perfilRepository;
+    @Autowired private EstudianteRepository estudianteRepository;
+    
+    @Autowired private PasswordEncoder passwordEncoder;
+    
+    @Transactional
+    public Usuario solicitarRegistroEstudiante(RegistroEstudianteRequest request){
+        if(usuarioRepository.findByEmail(request.getEmail()).isPresent()){
+            throw new RuntimeException("Error: El email ya está en uso!");
+        }
+        
+        Rol rolEstudiante = rolRepository.findByNombre("ROL_ESTUDIANTE").
+                orElseThrow(() -> new RuntimeException("Error: Rol 'ROL_ESTUDIANTE' no econtrado."));
+        
+        Usuario nuevoUsuario = new Usuario();
+        nuevoUsuario.setEmail(request.getEmail());
+        nuevoUsuario.setPassword(passwordEncoder.encode(request.getPassword()));
+        nuevoUsuario.setRol(rolEstudiante);
+        nuevoUsuario.setEnabled(false);
+        
+        Usuario usuarioGuardado = usuarioRepository.save(nuevoUsuario);
+        
+        Perfil nuevoPerfil = new Perfil();
+        nuevoPerfil.setNombres(request.getNombres());
+        nuevoPerfil.setApellidos(request.getApellidos());
+        nuevoPerfil.setDni(request.getDni());
+        nuevoPerfil.setTelefono(request.getTelefono());
+        nuevoPerfil.setUsuario(usuarioGuardado);
+        
+        perfilRepository.save(nuevoPerfil);
+        
+        Estudiante nuevoEstudiante = new Estudiante();
+        nuevoEstudiante.setId(usuarioGuardado.getId());
+        nuevoEstudiante.setUsuario(usuarioGuardado);
+        nuevoEstudiante.setFechaMatricula(new Date());
+        
+        estudianteRepository.save(nuevoEstudiante);
+        
+        return usuarioGuardado;
+    }
+    
+    public Usuario aprobarUsuario(UUID id){
+        Usuario usuario = usuarioRepository.findById(id)
+                .orElseThrow(() -> new RuntimeException("Usuario no econtrado con id: " + id));
+        
+        usuario.setEnabled(true);
+        
+        //Si el usuario es un estudiante
+        if(usuario.getRol() != null && usuario.getRol().getNombre().equals("ROL_ESTUDIANTE")){
+            //Buscamos su registro
+            Estudiante estudiante = estudianteRepository.findById(id)
+                    .orElseThrow(()-> new RuntimeException("Datos de estudiante no encontrados para el usuario: " + id));
+            //Generamos su codigo de estudiante
+            String codigoGenerado = "E" + (new Date().getYear() + 1900) + "-" + id.toString().substring(0,4).toUpperCase();
+            
+            estudiante.setCodigoEstudiante(codigoGenerado);
+            estudianteRepository.save(estudiante);
+        }
+        
+        return usuarioRepository.save(usuario);
+    }
+    
+    public List<Usuario> getUsuariosPendientes(){
+        return usuarioRepository.findByEnabled(false);
+    }
+}
