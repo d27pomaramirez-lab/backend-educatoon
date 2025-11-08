@@ -2,6 +2,7 @@
 package com.educatoon.backend.usuarios.model;
 
 import com.educatoon.backend.utils.AuditBase;
+import com.fasterxml.jackson.annotation.JsonBackReference;
 import jakarta.persistence.Column;
 import jakarta.persistence.Entity;
 import jakarta.persistence.FetchType;
@@ -43,5 +44,6 @@ public class Perfil extends AuditBase{
     
     @OneToOne(fetch = FetchType.LAZY)
     @JoinColumn(name = "usuario_id", referencedColumnName = "id")
+    @JsonBackReference
     private Usuario usuario;
 }

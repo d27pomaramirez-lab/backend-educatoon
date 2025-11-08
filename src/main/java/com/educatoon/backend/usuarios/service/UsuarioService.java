@@ -16,12 +16,15 @@ import java.util.List;
 import java.util.UUID;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.security.crypto.password.PasswordEncoder;
+import org.springframework.stereotype.Service;
 
 /**
  *
  * @author Diego
  */
-public class UsuariosService {
+
+@Service
+public class UsuarioService {
     @Autowired private UsuarioRepository usuarioRepository;
     @Autowired private RolRepository rolRepository;    
     @Autowired private PerfilRepository perfilRepository;
@@ -56,7 +59,6 @@ public class UsuariosService {
         perfilRepository.save(nuevoPerfil);
         
         Estudiante nuevoEstudiante = new Estudiante();
-        nuevoEstudiante.setId(usuarioGuardado.getId());
         nuevoEstudiante.setUsuario(usuarioGuardado);
         nuevoEstudiante.setFechaMatricula(new Date());
         

@@ -2,6 +2,7 @@
 package com.educatoon.backend.usuarios.model;
 
 import com.educatoon.backend.utils.AuditBase;
+import com.fasterxml.jackson.annotation.JsonManagedReference;
 import jakarta.persistence.CascadeType;
 import jakarta.persistence.Column;
 import jakarta.persistence.Entity;
@@ -44,5 +45,6 @@ public class Usuario extends AuditBase{
     private Rol rol;
     
     @OneToOne(mappedBy = "usuario", cascade = CascadeType.ALL, fetch = FetchType.LAZY)
+    @JsonManagedReference
     private Perfil perfil;
 }

@@ -1,13 +1,20 @@
 
 package com.educatoon.backend.security.controller;
 
-import com.educatoon.backend.usuarios.model.Usuario;
-import com.educatoon.backend.usuarios.repository.UsuarioRepository;
+import com.educatoon.backend.usuarios.dto.RegistroEstudianteRequest;
+import com.educatoon.backend.security.dto.LoginRequest;
+import com.educatoon.backend.security.dto.JwtResponse;
+import com.educatoon.backend.security.jwt.JwtUtil;
+import com.educatoon.backend.security.service.UserDetailsServiceImpl;
+import com.educatoon.backend.usuarios.service.UsuarioService;
 import org.springframework.beans.factory.annotation.Autowired;
+import org.springframework.http.HttpStatus;
 import org.springframework.http.ResponseEntity;
-import org.springframework.security.crypto.password.PasswordEncoder;
+import org.springframework.security.authentication.AuthenticationManager;
+import org.springframework.security.authentication.UsernamePasswordAuthenticationToken;
+import org.springframework.security.core.Authentication;
+import org.springframework.security.core.userdetails.UserDetails;
 import org.springframework.web.bind.annotation.*;
-import java.util.Map;
 
 /**
  *
@@ -16,44 +23,44 @@ import java.util.Map;
 
 @RestController
 @RequestMapping("/api/auth")
+@CrossOrigin(origins = "*")
 public class AuthController {
+    
     @Autowired
-    private UsuarioRepository usuarioRepository;
+    private AuthenticationManager authenticationManager;
 
     @Autowired
-    private PasswordEncoder passwordEncoder;
+    private UserDetailsServiceImpl userDetailsService;
 
-    @PostMapping("/register")
-    public ResponseEntity<?> registerUser(@RequestBody Usuario usuario) {
-        if (usuarioRepository.findByEmail(usuario.getEmail()).isPresent()) {
-            return ResponseEntity
-                .badRequest()
-                .body("Error: El email ya está en uso!");
+    @Autowired
+    private JwtUtil jwtUtil;
+
+    @Autowired
+    private UsuarioService usuarioService; 
+    
+    @PostMapping("/register-student")
+    public ResponseEntity<?> registerStudent(@RequestBody RegistroEstudianteRequest request) {
+        try {
+            usuarioService.solicitarRegistroEstudiante(request);
+            return ResponseEntity.ok("¡Solicitud de registro enviada! Espere aprobación del administrador.");
+        } catch (RuntimeException e) {
+            return new ResponseEntity<>(e.getMessage(), HttpStatus.BAD_REQUEST);
         }
-
-        usuario.setPassword(passwordEncoder.encode(usuario.getPassword()));        
-        
-        usuarioRepository.save(usuario);
-        return ResponseEntity.ok("Usuario registrado exitosamente!");
     }
 
-    // Endpoint para CUS 02: Iniciar Sesión (simplificado)
-    // Spring Security ya maneja el login, esto es para generar el token (siguiente paso)
     @PostMapping("/login")
-    public ResponseEntity<?> login(@RequestBody Map<String, String> credentials) {
-        // En un proyecto real, la autenticación la hace el filtro de Spring.
-        // Aquí generarías y devolverías el JWT.
-        
-        // Por ahora, solo confirmamos que el usuario existe (simulación)
-        String email = credentials.get("email");
-        Usuario usuario = usuarioRepository.findByEmail(email)
-            .orElse(null);
+    public ResponseEntity<?> login(@RequestBody LoginRequest loginRequest) {
+           
+        Authentication authentication = authenticationManager.authenticate(
+                new UsernamePasswordAuthenticationToken(loginRequest.getEmail(), loginRequest.getPassword())
+        );
 
-        if (usuario == null) {
-            return ResponseEntity.status(401).body("Credenciales inválidas");
-        }
-        
-        // TO-DO: Generar y devolver token JWT
-        return ResponseEntity.ok("Login exitoso (JWT no implementado)");
+        UserDetails userDetails = userDetailsService.loadUserByUsername(loginRequest.getEmail());
+
+        String token = jwtUtil.generateToken(userDetails);
+
+        return ResponseEntity.ok(
+            new JwtResponse(token, userDetails.getUsername(), userDetails.getAuthorities())
+        );
     }
 }
