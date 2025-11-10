@@ -10,6 +10,7 @@ import jakarta.persistence.Id;
 import jakarta.persistence.Table;
 import java.util.UUID;
 import lombok.Data;
+import lombok.NoArgsConstructor;
 
 
 /**
@@ -18,6 +19,7 @@ import lombok.Data;
  */
 
 @Entity
+@NoArgsConstructor
 @Table(name = "roles")
 @Data
 public class Rol extends AuditBase{

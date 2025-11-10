@@ -1,6 +1,5 @@
 package com.educatoon.backend.security.jwt;
 
-import org.springframework.stereotype.Component;
 import io.jsonwebtoken.Claims;
 import io.jsonwebtoken.Jwts;
 import io.jsonwebtoken.SignatureAlgorithm;
@@ -30,7 +29,6 @@ public class JwtUtil {
     }
 
     // Metodos para leer un token
-
     public String extractUsername(String token) {
         return extractClaim(token, Claims::getSubject);
     }
@@ -57,14 +55,12 @@ public class JwtUtil {
     }
 
     // Métodos para validar un token
-
     public Boolean validateToken(String token, UserDetails userDetails) {
         final String username = extractUsername(token);
         return (username.equals(userDetails.getUsername()) && !isTokenExpired(token));
     }
 
-    // Método para crear un token
-    
+    // Método para crear un token   
     public String generateToken(UserDetails userDetails) {
         return createToken(userDetails.getUsername());
     }

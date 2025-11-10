@@ -14,6 +14,7 @@ import jakarta.persistence.TemporalType;
 import java.util.Date;
 import java.util.UUID;
 import lombok.Data;
+import lombok.NoArgsConstructor;
 
 /**
  *
@@ -21,6 +22,7 @@ import lombok.Data;
  */
 
 @Entity
+@NoArgsConstructor
 @Table(name = "estudiantes")
 @Data
 public class Estudiante {

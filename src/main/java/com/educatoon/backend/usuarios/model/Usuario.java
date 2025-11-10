@@ -16,6 +16,7 @@ import jakarta.persistence.OneToOne;
 import jakarta.persistence.Table;
 import java.util.UUID;
 import lombok.Data;
+import lombok.NoArgsConstructor;
 
 /**
  *
@@ -23,6 +24,7 @@ import lombok.Data;
  */
 
 @Entity
+@NoArgsConstructor
 @Table(name = "usuarios")
 @Data
 public class Usuario extends AuditBase{

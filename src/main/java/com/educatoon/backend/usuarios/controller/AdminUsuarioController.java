@@ -3,6 +3,7 @@ package com.educatoon.backend.usuarios.controller;
 
 import com.educatoon.backend.usuarios.model.Usuario;
 import com.educatoon.backend.usuarios.service.UsuarioService;
+import com.educatoon.backend.usuarios.dto.AdminCrearUsuarioRequest;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.http.ResponseEntity;
 import org.springframework.web.bind.annotation.*;
@@ -26,9 +27,8 @@ public class AdminUsuarioController {
         return usuarioService.getUsuariosPendientes();
     }
 
-    // Endpoint para aprobar un usuario (este SÍ es PostMapping)
     @PostMapping("/aprobar/{id}")
-    public ResponseEntity<?> aprobarUsuario(@PathVariable UUID id) { // Cambiado a UUID
+    public ResponseEntity<?> aprobarUsuario(@PathVariable UUID id) {
         try {
             Usuario usuarioAprobado = usuarioService.aprobarUsuario(id);
             return ResponseEntity.ok("Usuario " + usuarioAprobado.getEmail() + " aprobado exitosamente.");
@@ -36,4 +36,16 @@ public class AdminUsuarioController {
             return new ResponseEntity<>(e.getMessage(), HttpStatus.NOT_FOUND);
         }
     }
+    
+    @PostMapping("/crear")
+    public ResponseEntity<?> crearUsuario(@RequestBody AdminCrearUsuarioRequest request) {
+        try {
+            Usuario nuevoUsuario = usuarioService.crearUsuarioAdmin(request);
+            return ResponseEntity.ok("Usuario " + nuevoUsuario.getEmail() + " creado exitosamente.");
+        } catch (RuntimeException e) {
+            return new ResponseEntity<>(e.getMessage(), HttpStatus.BAD_REQUEST);
+        }
+    }
+    
+    
 }

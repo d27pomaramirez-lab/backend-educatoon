@@ -15,11 +15,13 @@ import lombok.NoArgsConstructor;
 @Builder
 @NoArgsConstructor
 @AllArgsConstructor
-public class RegistroEstudianteRequest {
-    private String email;
-    private String password;
+public class AdminCrearUsuarioRequest {
     private String nombres;
     private String apellidos;
     private String dni;
     private String telefono;
+    private String email;
+    private String password;
+    private String nombreRol;
+    private String especialidad; //solo si es docente
 }
