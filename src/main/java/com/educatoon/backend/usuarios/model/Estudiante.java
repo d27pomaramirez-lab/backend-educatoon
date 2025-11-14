@@ -41,4 +41,7 @@ public class Estudiante {
     @Column(name = "fecha_matricula")
     @Temporal(TemporalType.DATE)
     private Date fechaMatricula;
+    
+    @Column(name = "documentos_validados")
+    private boolean documentosValidados;
 }

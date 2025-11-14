@@ -53,11 +53,13 @@ public class SecurityConfig {
         http
             .csrf(csrf -> csrf.disable()) 
             .cors(withDefaults())            
-            .authorizeHttpRequests(authz -> authz                
-                .requestMatchers("/api/auth/**").permitAll()                
-                .requestMatchers("/api/admin/**").permitAll()                 
-                .anyRequest().authenticated()
-            )
+            .authorizeHttpRequests(authz -> authz
+
+            .requestMatchers("/api/auth/**").permitAll()
+            .requestMatchers("/api/coordinador/**").hasAnyAuthority("ROL_COORDINADOR", "ROL_ADMINISTRADOR")
+            .requestMatchers("/api/admin/**").hasAuthority("ROL_ADMINISTRADOR") 
+            .anyRequest().authenticated()
+        )
             .sessionManagement(session -> session
                 .sessionCreationPolicy(SessionCreationPolicy.STATELESS)
             )

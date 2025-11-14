@@ -93,6 +93,21 @@ public class UsuarioService {
     }
     
     @Transactional
+    public void validarDocumentos(UUID id){
+        Usuario usuario = usuarioRepository.findById(id)
+                .orElseThrow(() -> new RuntimeException("Usuario no encontrado con id: " + id));
+        if(usuario.getRol() == null || !usuario.getRol().getNombre().equals("ROL_ESTUDIANTE")){
+            throw new RuntimeException("Este usuario no es un estudiante");            
+        }
+        
+        Estudiante estudiante = estudianteRepository.findById(id)
+                .orElseThrow(()-> new RuntimeException("Datos de estudiante no encontrados para el usuario: " + id));
+        
+        estudiante.setDocumentosValidados(true);
+        estudianteRepository.save(estudiante);
+    }
+    
+    @Transactional
     public Usuario crearUsuarioAdmin(AdminCrearUsuarioRequest request) {
         if (usuarioRepository.findByEmail(request.getEmail()).isPresent()) {
             throw new RuntimeException("Error: El email ya está en uso!");
