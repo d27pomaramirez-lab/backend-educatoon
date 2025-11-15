@@ -56,7 +56,7 @@ public class SecurityConfig {
             .authorizeHttpRequests(authz -> authz
 
             .requestMatchers("/api/auth/**").permitAll()
-            .requestMatchers("/api/coordinador/**").hasAnyAuthority("ROL_COORDINADOR", "ROL_ADMINISTRADOR")
+            .requestMatchers("/api/coordinador/**").hasAnyAuthority("ROL_COORDINADOR")
             .requestMatchers("/api/admin/**").hasAuthority("ROL_ADMINISTRADOR") 
             .anyRequest().authenticated()
         )

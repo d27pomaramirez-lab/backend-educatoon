@@ -20,6 +20,8 @@ import org.springframework.stereotype.Service;
 import com.educatoon.backend.usuarios.dto.AdminCrearUsuarioRequest;
 import com.educatoon.backend.usuarios.model.Docente;
 import com.educatoon.backend.usuarios.repository.DocenteRepository;
+import java.util.stream.Collectors;
+import com.educatoon.backend.usuarios.dto.UsuarioPendienteDTO;
 
 /**
  *
@@ -71,25 +73,60 @@ public class UsuarioService {
         return usuarioGuardado;
     }
     
-    public Usuario aprobarUsuario(UUID id){
+    @Transactional
+    public Usuario aprobarUsuario(UUID id) {
         Usuario usuario = usuarioRepository.findById(id)
-                .orElseThrow(() -> new RuntimeException("Usuario no econtrado con id: " + id));        
-        usuario.setEnabled(true);
-        
-        if(usuario.getRol() != null && usuario.getRol().getNombre().equals("ROL_ESTUDIANTE")){
+            .orElseThrow(() -> new RuntimeException("Usuario no encontrado con id: " + id));
+
+        if (usuario.getRol() != null && usuario.getRol().getNombre().equals("ROL_ESTUDIANTE")) {
+
             Estudiante estudiante = estudianteRepository.findById(id)
-                    .orElseThrow(()-> new RuntimeException("Datos de estudiante no encontrados para el usuario: " + id));
-            String codigoGenerado = "E" + (new Date().getYear() + 1900) + "-" + id.toString().substring(0,4).toUpperCase();
-            
-            estudiante.setCodigoEstudiante(codigoGenerado);
-            estudianteRepository.save(estudiante);
+                .orElseThrow(() -> new RuntimeException("Datos de estudiante no encontrados para el usuario: " + id));
+
+            if (!estudiante.isDocumentosValidados()) {
+                throw new RuntimeException("Error: Los documentos de este estudiante aún no han sido validados por un Coordinador.");
+            }
+
+            if (estudiante.getCodigoEstudiante() == null || estudiante.getCodigoEstudiante().isEmpty()) {
+                String codigoGenerado = "E" + (new Date().getYear() + 1900) + "-" + id.toString().substring(0, 4).toUpperCase();
+                estudiante.setCodigoEstudiante(codigoGenerado);
+                estudianteRepository.save(estudiante);
+            }
         }
-        
+        usuario.setEnabled(true);
         return usuarioRepository.save(usuario);
+    }   
+    
+    public List<UsuarioPendienteDTO> getUsuariosPendientes() {
+        List<Usuario> usuarios = usuarioRepository.findByEnabled(false);
+
+        return usuarios.stream()
+            .map(this::convertirAUsuarioPendienteDTO)
+            .collect(Collectors.toList());
     }
     
-    public List<Usuario> getUsuariosPendientes(){
-        return usuarioRepository.findByEnabled(false);
+    private UsuarioPendienteDTO convertirAUsuarioPendienteDTO(Usuario usuario) {
+        UsuarioPendienteDTO dto = new UsuarioPendienteDTO();
+
+        dto.setId(usuario.getId());
+        dto.setEmail(usuario.getEmail());
+        dto.setEnabled(usuario.isEnabled());
+
+        if (usuario.getPerfil() != null) {
+            dto.setNombres(usuario.getPerfil().getNombres());
+            dto.setApellidos(usuario.getPerfil().getApellidos());
+            dto.setTelefono(usuario.getPerfil().getTelefono());
+        }
+
+        Estudiante estudiante = estudianteRepository.findById(usuario.getId())
+                                    .orElse(null);
+
+        if (estudiante != null) {
+            dto.setDocumentosValidados(estudiante.isDocumentosValidados());
+        } else {
+            dto.setDocumentosValidados(false); 
+        }
+        return dto;
     }
     
     @Transactional

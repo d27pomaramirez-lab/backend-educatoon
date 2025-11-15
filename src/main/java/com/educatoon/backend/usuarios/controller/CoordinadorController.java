@@ -5,6 +5,8 @@ import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.http.HttpStatus;
 import org.springframework.http.ResponseEntity;
 import org.springframework.web.bind.annotation.*;
+import com.educatoon.backend.usuarios.dto.UsuarioPendienteDTO;
+import java.util.List;
 import java.util.UUID;
 
 /**
@@ -26,5 +28,10 @@ public class CoordinadorController {
         }catch (RuntimeException e){
             return new ResponseEntity<>(e.getMessage(),HttpStatus.NOT_FOUND);
         }
+    }
+    
+    @GetMapping("/pendientes")
+    public List<UsuarioPendienteDTO> getUsuariosPendientes() {
+        return usuarioService.getUsuariosPendientes();
     }
 }

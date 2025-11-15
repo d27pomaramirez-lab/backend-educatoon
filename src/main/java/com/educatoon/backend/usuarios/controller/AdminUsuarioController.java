@@ -2,6 +2,7 @@
 package com.educatoon.backend.usuarios.controller;
 
 import com.educatoon.backend.usuarios.model.Usuario;
+import com.educatoon.backend.usuarios.dto.UsuarioPendienteDTO;
 import com.educatoon.backend.usuarios.service.UsuarioService;
 import com.educatoon.backend.usuarios.dto.AdminCrearUsuarioRequest;
 import org.springframework.beans.factory.annotation.Autowired;
@@ -23,7 +24,7 @@ public class AdminUsuarioController {
     private UsuarioService usuarioService;
 
     @GetMapping("/pendientes")
-    public List<Usuario> getUsuariosPendientes() {
+    public List<UsuarioPendienteDTO> getUsuariosPendientes() {
         return usuarioService.getUsuariosPendientes();
     }
 
