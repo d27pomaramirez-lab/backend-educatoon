@@ -44,4 +44,13 @@ public class Estudiante {
     
     @Column(name = "documentos_validados")
     private boolean documentosValidados;
+    
+    @Column(name = "carrera_postular")
+    private String carreraPostular;
+
+    @Column(name = "universidad_postular")
+    private String universidadPostular;
+
+    @Column(name = "colegio_procedencia")
+    private String colegioProcedencia;
 }

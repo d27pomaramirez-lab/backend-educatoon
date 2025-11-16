@@ -51,8 +51,7 @@ public class UsuarioService {
         nuevoUsuario.setEmail(request.getEmail());
         nuevoUsuario.setPassword(passwordEncoder.encode(request.getPassword()));
         nuevoUsuario.setRol(rolEstudiante);
-        nuevoUsuario.setEnabled(false);
-        
+        nuevoUsuario.setEnabled(false);        
         Usuario usuarioGuardado = usuarioRepository.save(nuevoUsuario);
         
         Perfil nuevoPerfil = new Perfil();
@@ -60,14 +59,18 @@ public class UsuarioService {
         nuevoPerfil.setApellidos(request.getApellidos());
         nuevoPerfil.setDni(request.getDni());
         nuevoPerfil.setTelefono(request.getTelefono());
-        nuevoPerfil.setUsuario(usuarioGuardado);
-        
+        nuevoPerfil.setSexo(request.getSexo());                     
+        nuevoPerfil.setEstadoCivil(request.getEstadoCivil());      
+        nuevoPerfil.setFechaNacimiento(request.getFechaNacimiento());
+        nuevoPerfil.setUsuario(usuarioGuardado);    
         perfilRepository.save(nuevoPerfil);
         
         Estudiante nuevoEstudiante = new Estudiante();
         nuevoEstudiante.setUsuario(usuarioGuardado);
         nuevoEstudiante.setFechaMatricula(new Date());
-        
+        nuevoEstudiante.setCarreraPostular(request.getCarreraPostular());   
+        nuevoEstudiante.setUniversidadPostular(request.getUniversidadPostular()); 
+        nuevoEstudiante.setColegioProcedencia(request.getColegioProcedencia());        
         estudianteRepository.save(nuevoEstudiante);
         
         return usuarioGuardado;
@@ -111,11 +114,16 @@ public class UsuarioService {
         dto.setId(usuario.getId());
         dto.setEmail(usuario.getEmail());
         dto.setEnabled(usuario.isEnabled());
+        
+        if (usuario.getRol() != null) {
+            dto.setRolNombre(usuario.getRol().getNombre());
+        }
 
         if (usuario.getPerfil() != null) {
             dto.setNombres(usuario.getPerfil().getNombres());
             dto.setApellidos(usuario.getPerfil().getApellidos());
             dto.setTelefono(usuario.getPerfil().getTelefono());
+            dto.setSexo(usuario.getPerfil().getSexo());
         }
 
         Estudiante estudiante = estudianteRepository.findById(usuario.getId())
@@ -165,6 +173,9 @@ public class UsuarioService {
         nuevoPerfil.setApellidos(request.getApellidos());
         nuevoPerfil.setDni(request.getDni());
         nuevoPerfil.setTelefono(request.getTelefono());
+        nuevoPerfil.setSexo(request.getSexo());                   
+        nuevoPerfil.setEstadoCivil(request.getEstadoCivil());       
+        nuevoPerfil.setFechaNacimiento(request.getFechaNacimiento());
         nuevoPerfil.setUsuario(usuarioGuardado);
         perfilRepository.save(nuevoPerfil);
 
@@ -174,7 +185,18 @@ public class UsuarioService {
             nuevoDocente.setEspecialidad(request.getEspecialidad());
             docenteRepository.save(nuevoDocente);
         }
-
+        
+        if (rol.getNombre().equals("ROL_ESTUDIANTE")) {
+            Estudiante nuevoEstudiante = new Estudiante();
+            nuevoEstudiante.setUsuario(usuarioGuardado);
+            nuevoEstudiante.setFechaMatricula(new Date());
+            nuevoEstudiante.setDocumentosValidados(true);
+            nuevoEstudiante.setCarreraPostular(request.getCarreraPostular());     
+            nuevoEstudiante.setUniversidadPostular(request.getUniversidadPostular()); 
+            nuevoEstudiante.setColegioProcedencia(request.getColegioProcedencia()); 
+            estudianteRepository.save(nuevoEstudiante);
+        }
         return usuarioGuardado;
     }
+    
 }

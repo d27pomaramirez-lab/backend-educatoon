@@ -18,7 +18,10 @@ public class UsuarioPendienteDTO {
     private String nombres;
     private String apellidos;
     private String telefono;
+    private String sexo;
 
+    private String rolNombre;
+    
     private boolean documentosValidados;
     private boolean enabled;
     

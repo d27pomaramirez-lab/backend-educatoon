@@ -12,6 +12,9 @@ import jakarta.persistence.Id;
 import jakarta.persistence.JoinColumn;
 import jakarta.persistence.OneToOne;
 import jakarta.persistence.Table;
+import jakarta.persistence.Temporal;
+import jakarta.persistence.TemporalType;
+import java.util.Date;
 import java.util.UUID;
 import lombok.Data;
 import lombok.NoArgsConstructor;
@@ -48,4 +51,14 @@ public class Perfil extends AuditBase{
     @JoinColumn(name = "usuario_id", referencedColumnName = "id")
     @JsonBackReference
     private Usuario usuario;
+    
+    @Column(name = "sexo")
+    private String sexo;
+
+    @Column(name = "estado_civil")
+    private String estadoCivil;
+
+    @Temporal(TemporalType.DATE)
+    @Column(name = "fecha_nacimiento")
+    private Date fechaNacimiento;
 }
