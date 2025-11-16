@@ -1,6 +1,7 @@
 
 package com.educatoon.backend.usuarios.service;
 
+import com.educatoon.backend.usuarios.dto.ActualizarUsuarioRequest;
 import com.educatoon.backend.usuarios.dto.RegistroEstudianteRequest;
 import com.educatoon.backend.usuarios.model.Estudiante;
 import com.educatoon.backend.usuarios.model.Perfil;
@@ -101,9 +102,20 @@ public class UsuarioService {
     }   
     
     public List<UsuarioPendienteDTO> getUsuariosPendientes() {
-        List<Usuario> usuarios = usuarioRepository.findByEnabled(false);
-
-        return usuarios.stream()
+        List<Usuario> usuariosInactivos = usuarioRepository.findByEnabled(false);
+        
+        List<Usuario> soloPendientes = usuariosInactivos.stream()
+            .filter(usuario -> {
+                if (usuario.getRol() == null || !usuario.getRol().getNombre().equals("ROL_ESTUDIANTE")) {
+                    return false;
+                }               
+                Estudiante estudiante = estudianteRepository.findById(usuario.getId()).orElse(null);
+                
+                return (estudiante != null && estudiante.getCodigoEstudiante() == null);
+            })
+            .collect(Collectors.toList());
+            
+        return soloPendientes.stream()
             .map(this::convertirAUsuarioPendienteDTO)
             .collect(Collectors.toList());
     }
@@ -124,15 +136,26 @@ public class UsuarioService {
             dto.setApellidos(usuario.getPerfil().getApellidos());
             dto.setTelefono(usuario.getPerfil().getTelefono());
             dto.setSexo(usuario.getPerfil().getSexo());
+            dto.setDni(usuario.getPerfil().getDni());
+            dto.setEstadoCivil(usuario.getPerfil().getEstadoCivil());
+            dto.setFechaNacimiento(usuario.getPerfil().getFechaNacimiento());
         }
 
-        Estudiante estudiante = estudianteRepository.findById(usuario.getId())
-                                    .orElse(null);
+        if (usuario.getRol() != null && usuario.getRol().getNombre().equals("ROL_ESTUDIANTE")) {
+            Estudiante estudiante = estudianteRepository.findById(usuario.getId()).orElse(null);
+            if (estudiante != null) {
+                dto.setDocumentosValidados(estudiante.isDocumentosValidados());
+                dto.setCarreraPostular(estudiante.getCarreraPostular());
+                dto.setUniversidadPostular(estudiante.getUniversidadPostular());
+                dto.setColegioProcedencia(estudiante.getColegioProcedencia());
+            }
+        }
 
-        if (estudiante != null) {
-            dto.setDocumentosValidados(estudiante.isDocumentosValidados());
-        } else {
-            dto.setDocumentosValidados(false); 
+        if (usuario.getRol() != null && usuario.getRol().getNombre().equals("ROL_DOCENTE")) {
+            Docente docente = docenteRepository.findById(usuario.getId()).orElse(null);
+            if (docente != null) {
+                dto.setEspecialidad(docente.getEspecialidad());
+            }
         }
         return dto;
     }
@@ -197,6 +220,78 @@ public class UsuarioService {
             estudianteRepository.save(nuevoEstudiante);
         }
         return usuarioGuardado;
+    }
+    
+    public List<UsuarioPendienteDTO> getTodosLosUsuarios() {
+        List<Usuario> usuarios = usuarioRepository.findAllAndFetchPerfil();
+
+        return usuarios.stream()
+            .map(this::convertirAUsuarioPendienteDTO)
+            .collect(Collectors.toList());
+    }
+    
+    @Transactional
+    public void desactivarUsuario(UUID id) {
+        Usuario usuario = usuarioRepository.findById(id)
+            .orElseThrow(() -> new RuntimeException("Usuario no encontrado con id: " + id));
+        usuario.setEnabled(false);
+        usuarioRepository.save(usuario);
+    }
+    
+    public UsuarioPendienteDTO getUsuarioById(UUID id) {
+        Usuario usuario = usuarioRepository.findByIdAndFetchPerfil(id)
+            .orElseThrow(() -> new RuntimeException("Usuario no encontrado con id: " + id));
+
+        return convertirAUsuarioPendienteDTO(usuario);
+    }
+    
+    @Transactional
+    public Usuario actualizarUsuario(UUID id, ActualizarUsuarioRequest request) {
+        
+        Usuario usuario = usuarioRepository.findByIdAndFetchPerfil(id)
+            .orElseThrow(() -> new RuntimeException("Usuario no encontrado con id: " + id));
+
+        if (request.getEmail() != null && !request.getEmail().isEmpty()) {
+            if (!usuario.getEmail().equals(request.getEmail()) && 
+                usuarioRepository.findByEmail(request.getEmail()).isPresent()) {
+                throw new RuntimeException("Error: El nuevo email ya está en uso.");
+            }
+            usuario.setEmail(request.getEmail());
+        }
+
+        if (request.getPassword() != null && !request.getPassword().isEmpty()) {
+            usuario.setPassword(passwordEncoder.encode(request.getPassword()));
+        }
+
+        if (usuario.getPerfil() != null) {
+            Perfil perfil = usuario.getPerfil();
+            perfil.setNombres(request.getNombres());
+            perfil.setApellidos(request.getApellidos());
+            perfil.setDni(request.getDni());
+            perfil.setTelefono(request.getTelefono());
+            perfil.setSexo(request.getSexo());
+            perfil.setEstadoCivil(request.getEstadoCivil());
+            perfil.setFechaNacimiento(request.getFechaNacimiento());
+        }
+
+        if (usuario.getRol() != null) {            
+            if (usuario.getRol().getNombre().equals("ROL_ESTUDIANTE")) {
+                Estudiante estudiante = estudianteRepository.findById(id)
+                    .orElseThrow(() -> new RuntimeException("Datos de estudiante no encontrados para actualizar."));
+                
+                estudiante.setCarreraPostular(request.getCarreraPostular());
+                estudiante.setUniversidadPostular(request.getUniversidadPostular());
+                estudiante.setColegioProcedencia(request.getColegioProcedencia());
+            }
+            
+            if (usuario.getRol().getNombre().equals("ROL_DOCENTE")) {
+                Docente docente = docenteRepository.findById(id)
+                    .orElseThrow(() -> new RuntimeException("Datos de docente no encontrados para actualizar."));
+                
+                docente.setEspecialidad(request.getEspecialidad());
+            }
+        }
+        return usuarioRepository.save(usuario);
     }
     
 }

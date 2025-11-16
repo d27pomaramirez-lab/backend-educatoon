@@ -1,5 +1,6 @@
 package com.educatoon.backend.usuarios.dto;
 
+import java.util.Date;
 import java.util.UUID;
 import lombok.Data;
 import lombok.NoArgsConstructor;
@@ -17,12 +18,21 @@ public class UsuarioPendienteDTO {
 
     private String nombres;
     private String apellidos;
+    private String dni;
     private String telefono;
     private String sexo;
+    private String estadoCivil;      
+    private Date fechaNacimiento;
 
     private String rolNombre;
     
     private boolean documentosValidados;
     private boolean enabled;
+    
+    private String carreraPostular;    
+    private String universidadPostular; 
+    private String colegioProcedencia; 
+
+    private String especialidad;       
     
 }
