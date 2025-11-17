@@ -27,4 +27,7 @@ public interface UsuarioRepository extends JpaRepository<Usuario, UUID>{
            "LEFT JOIN FETCH u.perfil " +
            "WHERE u.id = :id")
     Optional<Usuario> findByIdAndFetchPerfil(@Param("id") UUID id);
+    
+    @Query("SELECT u FROM Usuario u LEFT JOIN FETCH u.perfil WHERE u.email = :email")
+    Optional<Usuario> findByEmailAndFetchPerfil(@Param("email") String email);
 }
