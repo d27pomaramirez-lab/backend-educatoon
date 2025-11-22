@@ -3,7 +3,7 @@ package com.educatoon.backend.usuarios.controller;
 
 import com.educatoon.backend.usuarios.dto.ActualizarUsuarioRequest;
 import com.educatoon.backend.usuarios.model.Usuario;
-import com.educatoon.backend.usuarios.dto.UsuarioPendienteDTO;
+import com.educatoon.backend.usuarios.dto.UsuarioPendienteResponse;
 import com.educatoon.backend.usuarios.service.UsuarioService;
 import com.educatoon.backend.usuarios.dto.AdminCrearUsuarioRequest;
 import org.springframework.beans.factory.annotation.Autowired;
@@ -25,12 +25,12 @@ public class AdminUsuarioController {
     private UsuarioService usuarioService;
 
     @GetMapping("/pendientes")
-    public List<UsuarioPendienteDTO> getUsuariosPendientes() {
+    public List<UsuarioPendienteResponse> getUsuariosPendientes() {
         return usuarioService.getUsuariosPendientes();
     }
     
     @GetMapping("/todos")
-    public List<UsuarioPendienteDTO> getTodosLosUsuarios() {
+    public List<UsuarioPendienteResponse> getTodosLosUsuarios() {
         return usuarioService.getTodosLosUsuarios();
     }
 
@@ -67,7 +67,7 @@ public class AdminUsuarioController {
     @GetMapping("/{id}")
     public ResponseEntity<?> getUsuarioById(@PathVariable UUID id) {
         try {
-            UsuarioPendienteDTO usuario = usuarioService.getUsuarioById(id);
+            UsuarioPendienteResponse usuario = usuarioService.getUsuarioById(id);
             return ResponseEntity.ok(usuario);
         } catch (RuntimeException e) {
             return new ResponseEntity<>(e.getMessage(), HttpStatus.NOT_FOUND);

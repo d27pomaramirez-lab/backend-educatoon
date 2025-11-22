@@ -12,7 +12,7 @@ import lombok.NoArgsConstructor;
 
 @Data
 @NoArgsConstructor
-public class UsuarioPendienteDTO {
+public class UsuarioPendienteResponse {
     private UUID id;
     private String email;
 

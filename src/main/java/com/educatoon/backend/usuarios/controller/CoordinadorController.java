@@ -1,11 +1,15 @@
 package com.educatoon.backend.usuarios.controller;
 
+import com.educatoon.backend.usuarios.dto.AsesoriaResponse;
+import com.educatoon.backend.usuarios.dto.CrearAsesoriaRequest;
 import com.educatoon.backend.usuarios.service.UsuarioService;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.http.HttpStatus;
 import org.springframework.http.ResponseEntity;
 import org.springframework.web.bind.annotation.*;
-import com.educatoon.backend.usuarios.dto.UsuarioPendienteDTO;
+import com.educatoon.backend.usuarios.dto.UsuarioPendienteResponse;
+import com.educatoon.backend.usuarios.model.Asesoria;
+import com.educatoon.backend.usuarios.service.AsesoriaService;
 import java.util.List;
 import java.util.UUID;
 
@@ -19,6 +23,7 @@ import java.util.UUID;
 public class CoordinadorController {
     
     @Autowired private UsuarioService usuarioService;
+    @Autowired private AsesoriaService asesoriaService;
     
     @PostMapping("/validar-documentos/{id}")
     public ResponseEntity<?> validarDocumentosEstudiante(@PathVariable UUID id){
@@ -31,7 +36,27 @@ public class CoordinadorController {
     }
     
     @GetMapping("/pendientes")
-    public List<UsuarioPendienteDTO> getUsuariosPendientes() {
+    public List<UsuarioPendienteResponse> getUsuariosPendientes() {
         return usuarioService.getUsuariosPendientes();
+    }
+    
+    @GetMapping("/asesorias")
+    public ResponseEntity<List<AsesoriaResponse>> listarAsesorias() {
+        return ResponseEntity.ok(asesoriaService.listarAsesorias());
+    }
+    
+    @PostMapping("/asesorias/crear")
+    public ResponseEntity<?> crearAsesoria(@RequestBody CrearAsesoriaRequest request) {
+        try {
+            Asesoria asesoria = asesoriaService.crearAsesoria(request);
+            return ResponseEntity.ok("Asesoría programada con éxito.");
+        } catch (RuntimeException e) {
+            return ResponseEntity.badRequest().body(e.getMessage());
+        }
+    }
+    
+    @GetMapping("/usuarios")
+    public ResponseEntity<List<UsuarioPendienteResponse>> listarUsuariosParaCoordinador() {
+        return ResponseEntity.ok(usuarioService.getTodosLosUsuarios());
     }
 }

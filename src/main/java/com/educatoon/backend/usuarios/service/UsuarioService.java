@@ -22,7 +22,7 @@ import com.educatoon.backend.usuarios.dto.AdminCrearUsuarioRequest;
 import com.educatoon.backend.usuarios.model.Docente;
 import com.educatoon.backend.usuarios.repository.DocenteRepository;
 import java.util.stream.Collectors;
-import com.educatoon.backend.usuarios.dto.UsuarioPendienteDTO;
+import com.educatoon.backend.usuarios.dto.UsuarioPendienteResponse;
 
 /**
  *
@@ -101,7 +101,7 @@ public class UsuarioService {
         return usuarioRepository.save(usuario);
     }   
     
-    public List<UsuarioPendienteDTO> getUsuariosPendientes() {
+    public List<UsuarioPendienteResponse> getUsuariosPendientes() {
         List<Usuario> usuariosInactivos = usuarioRepository.findByEnabled(false);
         
         List<Usuario> soloPendientes = usuariosInactivos.stream()
@@ -120,8 +120,8 @@ public class UsuarioService {
             .collect(Collectors.toList());
     }
     
-    private UsuarioPendienteDTO convertirAUsuarioPendienteDTO(Usuario usuario) {
-        UsuarioPendienteDTO dto = new UsuarioPendienteDTO();
+    private UsuarioPendienteResponse convertirAUsuarioPendienteDTO(Usuario usuario) {
+        UsuarioPendienteResponse dto = new UsuarioPendienteResponse();
 
         dto.setId(usuario.getId());
         dto.setEmail(usuario.getEmail());
@@ -222,7 +222,7 @@ public class UsuarioService {
         return usuarioGuardado;
     }
     
-    public List<UsuarioPendienteDTO> getTodosLosUsuarios() {
+    public List<UsuarioPendienteResponse> getTodosLosUsuarios() {
         List<Usuario> usuarios = usuarioRepository.findAllAndFetchPerfil();
 
         return usuarios.stream()
@@ -238,7 +238,7 @@ public class UsuarioService {
         usuarioRepository.save(usuario);
     }
     
-    public UsuarioPendienteDTO getUsuarioById(UUID id) {
+    public UsuarioPendienteResponse getUsuarioById(UUID id) {
         Usuario usuario = usuarioRepository.findByIdAndFetchPerfil(id)
             .orElseThrow(() -> new RuntimeException("Usuario no encontrado con id: " + id));
 
