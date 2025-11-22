@@ -1,5 +1,6 @@
 package com.educatoon.backend.usuarios.controller;
 
+import com.educatoon.backend.asesorias.dto.ActualizarAsesoriaRequest;
 import com.educatoon.backend.asesorias.dto.AsesoriaResponse;
 import com.educatoon.backend.asesorias.dto.CrearAsesoriaRequest;
 import com.educatoon.backend.usuarios.service.UsuarioService;
@@ -40,6 +41,11 @@ public class CoordinadorController {
         return usuarioService.getUsuariosPendientes();
     }
     
+    @GetMapping("/usuarios")
+    public ResponseEntity<List<UsuarioPendienteResponse>> listarUsuariosParaCoordinador() {
+        return ResponseEntity.ok(usuarioService.getTodosLosUsuarios());
+    }
+    
     @GetMapping("/asesorias")
     public ResponseEntity<List<AsesoriaResponse>> listarAsesorias() {
         return ResponseEntity.ok(asesoriaService.listarAsesorias());
@@ -55,8 +61,25 @@ public class CoordinadorController {
         }
     }
     
-    @GetMapping("/usuarios")
-    public ResponseEntity<List<UsuarioPendienteResponse>> listarUsuariosParaCoordinador() {
-        return ResponseEntity.ok(usuarioService.getTodosLosUsuarios());
+    @PutMapping("/asesorias/actualizar/{id}")
+    public ResponseEntity<?> actualizarAsesoria(@PathVariable UUID id, @RequestBody ActualizarAsesoriaRequest request) {
+        try {
+            asesoriaService.actualizarAsesoria(id, request);
+            return ResponseEntity.ok("Asesoría actualizada correctamente.");
+        } catch (RuntimeException e) {
+            return ResponseEntity.badRequest().body(e.getMessage());
+        }
     }
+
+    @DeleteMapping("/asesorias/cancelar/{id}")
+    public ResponseEntity<?> cancelarAsesoria(@PathVariable UUID id) {
+        try {
+            asesoriaService.cancelarAsesoria(id);
+            return ResponseEntity.ok("Asesoría cancelada correctamente.");
+        } catch (RuntimeException e) {
+            return ResponseEntity.badRequest().body(e.getMessage());
+        }
+    }
+    
+    
 }
