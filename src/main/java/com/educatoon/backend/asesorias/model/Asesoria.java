@@ -1,6 +1,8 @@
 
-package com.educatoon.backend.usuarios.model;
+package com.educatoon.backend.asesorias.model;
 
+import com.educatoon.backend.usuarios.model.Docente;
+import com.educatoon.backend.usuarios.model.Estudiante;
 import com.educatoon.backend.utils.AuditBase;
 import jakarta.persistence.Column;
 import jakarta.persistence.Entity;

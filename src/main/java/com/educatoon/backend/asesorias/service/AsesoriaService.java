@@ -1,11 +1,11 @@
-package com.educatoon.backend.usuarios.service;
+package com.educatoon.backend.asesorias.service;
 
-import com.educatoon.backend.usuarios.dto.AsesoriaResponse;
-import com.educatoon.backend.usuarios.dto.CrearAsesoriaRequest;
-import com.educatoon.backend.usuarios.model.Asesoria;
+import com.educatoon.backend.asesorias.dto.AsesoriaResponse;
+import com.educatoon.backend.asesorias.dto.CrearAsesoriaRequest;
+import com.educatoon.backend.asesorias.model.Asesoria;
 import com.educatoon.backend.usuarios.model.Docente;
 import com.educatoon.backend.usuarios.model.Estudiante;
-import com.educatoon.backend.usuarios.repository.AsesoriaRepository;
+import com.educatoon.backend.asesorias.repository.AsesoriaRepository;
 import com.educatoon.backend.usuarios.repository.DocenteRepository;
 import com.educatoon.backend.usuarios.repository.EstudianteRepository;
 import jakarta.transaction.Transactional;

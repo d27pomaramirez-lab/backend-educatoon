@@ -1,4 +1,4 @@
-package com.educatoon.backend.usuarios.dto;
+package com.educatoon.backend.asesorias.dto;
 
 import java.util.Date;
 import java.util.UUID;

@@ -1,6 +1,6 @@
-package com.educatoon.backend.usuarios.repository;
+package com.educatoon.backend.asesorias.repository;
 
-import com.educatoon.backend.usuarios.model.Asesoria;
+import com.educatoon.backend.asesorias.model.Asesoria;
 import java.util.List;
 import java.util.UUID;
 import org.springframework.data.jpa.repository.JpaRepository;

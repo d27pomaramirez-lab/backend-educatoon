@@ -1,15 +1,15 @@
 package com.educatoon.backend.usuarios.controller;
 
-import com.educatoon.backend.usuarios.dto.AsesoriaResponse;
-import com.educatoon.backend.usuarios.dto.CrearAsesoriaRequest;
+import com.educatoon.backend.asesorias.dto.AsesoriaResponse;
+import com.educatoon.backend.asesorias.dto.CrearAsesoriaRequest;
 import com.educatoon.backend.usuarios.service.UsuarioService;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.http.HttpStatus;
 import org.springframework.http.ResponseEntity;
 import org.springframework.web.bind.annotation.*;
 import com.educatoon.backend.usuarios.dto.UsuarioPendienteResponse;
-import com.educatoon.backend.usuarios.model.Asesoria;
-import com.educatoon.backend.usuarios.service.AsesoriaService;
+import com.educatoon.backend.asesorias.model.Asesoria;
+import com.educatoon.backend.asesorias.service.AsesoriaService;
 import java.util.List;
 import java.util.UUID;
 
