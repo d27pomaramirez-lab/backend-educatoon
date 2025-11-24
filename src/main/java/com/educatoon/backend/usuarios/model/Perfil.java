@@ -62,6 +62,9 @@ public class Perfil extends AuditBase{
     @Column(name = "estado_civil")
     private String estadoCivil;
 
+    @Column(name = "foto")
+    private String foto;
+    
     @Temporal(TemporalType.DATE)
     @Column(name = "fecha_nacimiento")
     private Date fechaNacimiento;
