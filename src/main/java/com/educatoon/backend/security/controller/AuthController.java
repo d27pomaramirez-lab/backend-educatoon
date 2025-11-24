@@ -64,7 +64,6 @@ public class AuthController {
 
         Usuario usuarioCompleto = usuarioRepository.findByEmailAndFetchPerfil(loginRequest.getEmail())
             .orElseThrow(() -> new RuntimeException("Error al cargar datos de perfil de usuario."));
-
         String nombres = (usuarioCompleto.getPerfil() != null) ? usuarioCompleto.getPerfil().getNombres() : "";
         String apellidos = (usuarioCompleto.getPerfil() != null) ? usuarioCompleto.getPerfil().getApellidos() : "";
 
