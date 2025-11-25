@@ -52,9 +52,10 @@ public class SecurityConfig {
     public SecurityFilterChain filterChain(HttpSecurity http) throws Exception {
         http
             .csrf(csrf -> csrf.disable()) 
-            .cors(withDefaults())            
+            .cors(cors -> cors.configurationSource(corsConfigurationSource()))            
             .authorizeHttpRequests(authz -> authz
-
+            .requestMatchers("/uploads/**").permitAll()
+            .requestMatchers("/api/perfil/foto/**").permitAll()
             .requestMatchers("/api/auth/**").permitAll()
             .requestMatchers("/api/coordinador/**").hasAnyAuthority("ROL_COORDINADOR")
             .requestMatchers("/api/admin/**").hasAuthority("ROL_ADMINISTRADOR") 

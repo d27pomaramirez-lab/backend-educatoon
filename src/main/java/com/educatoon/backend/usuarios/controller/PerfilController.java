@@ -5,6 +5,7 @@ package com.educatoon.backend.usuarios.controller;
  * @author Aldair
  */
 import com.educatoon.backend.usuarios.dto.PerfilResponse;
+import com.educatoon.backend.usuarios.dto.PerfilUpdateDTO;
 import com.educatoon.backend.usuarios.service.PerfilService;
 import lombok.RequiredArgsConstructor;
 import org.springframework.http.HttpHeaders;
@@ -35,6 +36,19 @@ public class PerfilController {
         }
     }
 
+    // Actualizar perfil por EMAIL
+    @PutMapping("/by-email/{email}")
+    public ResponseEntity<PerfilResponse> actualizarPerfilByEmail(
+            @PathVariable String email,
+            @RequestBody PerfilUpdateDTO perfilUpdateDTO) {
+        try {
+            PerfilResponse perfilActualizado = perfilService.actualizarPerfilByEmail(email, perfilUpdateDTO);
+            return ResponseEntity.ok(perfilActualizado);
+        } catch (RuntimeException e) {
+            return ResponseEntity.badRequest().body(null);
+        }
+    }
+    
     // Obtener perfil completo por ID (mantener por si acaso)
     @GetMapping("/{usuarioId}")
     public ResponseEntity<PerfilResponse> getPerfil(@PathVariable UUID usuarioId) {
