@@ -4,10 +4,14 @@
  */
 package com.educatoon.backend.usuarios.service;
 
+import com.educatoon.backend.usuarios.dto.DocenteResponse;
 import com.educatoon.backend.usuarios.dto.SeccionRequest;
+import com.educatoon.backend.usuarios.dto.SeccionResponse;
 import com.educatoon.backend.usuarios.model.Curso;
 import com.educatoon.backend.usuarios.model.Docente;
+import com.educatoon.backend.usuarios.model.Perfil;
 import com.educatoon.backend.usuarios.model.Seccion;
+import com.educatoon.backend.usuarios.model.Usuario;
 import com.educatoon.backend.usuarios.repository.CursoRepository;
 import com.educatoon.backend.usuarios.repository.DocenteRepository;
 import com.educatoon.backend.usuarios.repository.SeccionRepository;
@@ -38,19 +42,17 @@ public class SeccionService {
         Curso curso = cursoRepository.findByNombre(request.getCurso()).
                 orElseThrow(() -> new RuntimeException("Curso no encontrado con nombre: " + request.getCurso()));
         
-        //Docente docente = docenteRepository;
-      
-        
+        Docente docente = findDocenteByIdString(request.getDocente());
+
         Seccion nuevaSeccion = new Seccion();
         
         nuevaSeccion.setCapacidad(request.getCapacidad());
         nuevaSeccion.setAula(request.getAula());
         
-        String codigoSeccion =  generarCodigoParaSeccion(nuevaSeccion, request);
+        String codigoSeccion =  generarCodigoParaSeccion();
 
         nuevaSeccion.setCodigoSeccion(codigoSeccion);
-        
-        //nuevaSeccion.setDocente
+        nuevaSeccion.setDocente(docente);
         nuevaSeccion.setCurso(curso);
         
         
@@ -59,16 +61,17 @@ public class SeccionService {
         return seccionGuardada;
     }
     
-    public List<SeccionRequest> listarSecciones() {
+    @Transactional
+    public List<SeccionResponse> listarSecciones() {
         List<Seccion> secciones = seccionRepository.findAll();
         
         return secciones.stream()
-            .map(this::convertirASeccionRequest)
+            .map(this::convertirASeccionResponse)
             .collect(Collectors.toList());
     }
     
     @Transactional
-    public Seccion actualizarSeccion(UUID seccionId, SeccionRequest request) {
+    public SeccionResponse actualizarSeccion(UUID seccionId, SeccionRequest request) {
         Seccion seccionExistente = seccionRepository.findById(seccionId)
                 .orElseThrow(() -> new RuntimeException("Sección no encontrada con id: " + seccionId));
 
@@ -82,19 +85,82 @@ public class SeccionService {
             seccionExistente.setCurso(curso);
         }
 
+        if (request.getDocente() != null && !request.getDocente().isEmpty()) {
+            Docente docente = findDocenteByNombreCompleto(request.getDocente());
+            seccionExistente.setDocente(docente);
+        }
+
         // No es necesario llamar a save() explícitamente debido a @Transactional
-        return seccionExistente;
+        return convertirASeccionResponse(seccionExistente);
     }
 
     @Transactional
-    public Seccion eliminarSeccion(UUID seccionId){
+    public SeccionResponse eliminarSeccion(UUID seccionId){
         Seccion seccion = seccionRepository.findById(seccionId)
                 .orElseThrow(() -> new RuntimeException("Sección no encontrada con id: " + seccionId));
+        
+        SeccionResponse response = convertirASeccionResponse(seccion);
+
         seccionRepository.delete(seccion);
-        return seccion;
+        
+        return response;
+    }
+
+    @Transactional
+    public List<DocenteResponse> listarDocentes() {
+        return docenteRepository.findAll().stream()
+                .map(docente -> new DocenteResponse(
+                    docente.getId(), 
+                    getNombreCompletoFromDocente(docente)
+                ))
+                .collect(Collectors.toList());
+    }
+
+    private SeccionResponse convertirASeccionResponse(Seccion seccion) {
+        SeccionResponse response = new SeccionResponse();
+        response.setId(seccion.getId());
+        response.setCodigoSeccion(seccion.getCodigoSeccion());
+        response.setCapacidad(seccion.getCapacidad());
+        response.setAula(seccion.getAula());
+        
+        if (seccion.getCurso() != null) {
+            response.setCurso(seccion.getCurso().getNombre());
+        }
+        
+        response.setDocente(getNombreCompletoFromDocente(seccion.getDocente()));
+        
+        return response;
     }
     
-    private SeccionRequest convertirASeccionRequest(Seccion seccion) {
+    private Docente findDocenteByNombreCompleto(String nombreCompleto) {
+        return docenteRepository.findAll().stream()
+            .filter(d -> {
+                Usuario usuario = d.getUsuario();
+                if (usuario != null && usuario.getPerfil() != null) {
+                    Perfil perfil = usuario.getPerfil();
+                    String nombre = perfil.getNombres() + " " + perfil.getApellidos();
+                    return nombre.equalsIgnoreCase(nombreCompleto);
+                }
+                return false;
+            })
+            .findFirst()
+            .orElseThrow(() -> new RuntimeException("Docente no encontrado con nombre: " + nombreCompleto));
+    }
+
+    private Docente findDocenteByIdString(String docenteIdString) {
+        if (docenteIdString == null || docenteIdString.isEmpty()) {
+            return null;
+        }
+        try {
+            UUID docenteId = UUID.fromString(docenteIdString);
+            return docenteRepository.findById(docenteId)
+                    .orElseThrow(() -> new RuntimeException("Docente no encontrado con id: " + docenteIdString));
+        } catch (IllegalArgumentException e) {
+            throw new RuntimeException("El ID del docente proporcionado no es un UUID válido: " + docenteIdString);
+        }
+    }
+    
+    /*private SeccionRequest convertirASeccionRequest(Seccion seccion) {
         SeccionRequest res = new SeccionRequest();
 
         res.setAula(seccion.getAula());
@@ -105,18 +171,29 @@ public class SeccionService {
             res.setCurso(curso.getNombre());
         }
         
-        res.setDocente("Aleatorio");
-        
+        res.setDocente(getNombreCompletoFromDocente(seccion.getDocente()));
+
         return res;
+    }*/
+
+    private String getNombreCompletoFromDocente(Docente docente) {
+        if (docente == null) {
+            return "Sin asignar";
+        }
+        Usuario usuario = docente.getUsuario();
+        if (usuario != null && usuario.getPerfil() != null) {
+            Perfil perfil = usuario.getPerfil();
+            return perfil.getNombres() + " " + perfil.getApellidos();
+        } else {
+            return "Docente sin nombre";
+        }
     }
     
-    private String generarCodigoParaSeccion(Seccion seccion, SeccionRequest request){        
-        Random rand = new Random();
+    private String generarCodigoParaSeccion(){        
+        long totalSecciones = seccionRepository.count();
         
-        int min = 5;
-        int max = 15;
-        int valorAleatorio = rand.nextInt(max - min + 1) + min;
-        
-        return "CU00" + valorAleatorio;
+        long nuevoNumero = totalSecciones + 1;
+
+        return String.format("SEC%04d", nuevoNumero);
     }
 }

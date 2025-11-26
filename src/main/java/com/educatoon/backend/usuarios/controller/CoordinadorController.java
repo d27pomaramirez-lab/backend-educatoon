@@ -3,7 +3,9 @@ package com.educatoon.backend.usuarios.controller;
 import com.educatoon.backend.asesorias.dto.ActualizarAsesoriaRequest;
 import com.educatoon.backend.asesorias.dto.AsesoriaResponse;
 import com.educatoon.backend.asesorias.dto.CrearAsesoriaRequest;
+import com.educatoon.backend.usuarios.dto.DocenteResponse;
 import com.educatoon.backend.usuarios.dto.SeccionRequest;
+import com.educatoon.backend.usuarios.dto.SeccionResponse;
 import com.educatoon.backend.usuarios.service.UsuarioService;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.http.HttpStatus;
@@ -98,14 +100,19 @@ public class CoordinadorController {
     }
     
     @GetMapping("/listar-secciones")
-    public List<SeccionRequest> ListarSecciones() {
+    public List<SeccionResponse> ListarSecciones() {
         return seccionService.listarSecciones();
+    }
+
+    @GetMapping("/listar-docentes")
+    public ResponseEntity<List<DocenteResponse>> listarDocentes() {
+        return ResponseEntity.ok(seccionService.listarDocentes());
     }
 
     @PutMapping("/actualizar-seccion/{id}")
     public ResponseEntity<?> actualizarSeccion(@PathVariable UUID id, @RequestBody SeccionRequest request) {
         try {
-            Seccion seccionActualizada = seccionService.actualizarSeccion(id, request);
+            SeccionResponse seccionActualizada = seccionService.actualizarSeccion(id, request);
             return ResponseEntity.ok(seccionActualizada);
         } catch (RuntimeException e) {
             return new ResponseEntity<>(e.getMessage(), HttpStatus.BAD_REQUEST);
@@ -115,7 +122,7 @@ public class CoordinadorController {
     @DeleteMapping("/eliminar-seccion/{id}")
     public ResponseEntity<?> eliminarSeccion(@PathVariable UUID id) {
         try {
-           Seccion seccionEliminada = seccionService.eliminarSeccion(id);
+           SeccionResponse seccionEliminada = seccionService.eliminarSeccion(id);
             return ResponseEntity.ok(seccionEliminada);
         } catch (RuntimeException e) {
             return new ResponseEntity<>(e.getMessage(), HttpStatus.NOT_FOUND);
