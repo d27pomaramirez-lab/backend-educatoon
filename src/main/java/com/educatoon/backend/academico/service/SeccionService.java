@@ -2,19 +2,19 @@
  * Click nbfs://nbhost/SystemFileSystem/Templates/Licenses/license-default.txt to change this license
  * Click nbfs://nbhost/SystemFileSystem/Templates/Classes/Class.java to edit this template
  */
-package com.educatoon.backend.usuarios.service;
+package com.educatoon.backend.academico.service;
 
 import com.educatoon.backend.usuarios.dto.DocenteResponse;
-import com.educatoon.backend.usuarios.dto.SeccionRequest;
-import com.educatoon.backend.usuarios.dto.SeccionResponse;
-import com.educatoon.backend.usuarios.model.Curso;
+import com.educatoon.backend.academico.dto.SeccionRequest;
+import com.educatoon.backend.academico.dto.SeccionResponse;
+import com.educatoon.backend.academico.model.Curso;
 import com.educatoon.backend.usuarios.model.Docente;
 import com.educatoon.backend.usuarios.model.Perfil;
-import com.educatoon.backend.usuarios.model.Seccion;
+import com.educatoon.backend.academico.model.Seccion;
 import com.educatoon.backend.usuarios.model.Usuario;
-import com.educatoon.backend.usuarios.repository.CursoRepository;
+import com.educatoon.backend.academico.repository.CursoRepository;
 import com.educatoon.backend.usuarios.repository.DocenteRepository;
-import com.educatoon.backend.usuarios.repository.SeccionRepository;
+import com.educatoon.backend.academico.repository.SeccionRepository;
 import com.educatoon.backend.usuarios.repository.UsuarioRepository;
 import jakarta.transaction.Transactional;
 import java.util.HashSet;
@@ -39,7 +39,7 @@ public class SeccionService {
     
     public Seccion registrarSeccion(SeccionRequest request) {
         
-        Curso curso = cursoRepository.findByNombre(request.getCurso()).
+        Curso curso = cursoRepository.findByNombreIgnoreCase(request.getCurso()).
                 orElseThrow(() -> new RuntimeException("Curso no encontrado con nombre: " + request.getCurso()));
         
         Docente docente = findDocenteByIdString(request.getDocente());
@@ -80,7 +80,7 @@ public class SeccionService {
         seccionExistente.setAula(request.getAula());
 
         if (request.getCurso() != null && !request.getCurso().isEmpty()) {
-            Curso curso = cursoRepository.findByNombre(request.getCurso())
+            Curso curso = cursoRepository.findByNombreIgnoreCase(request.getCurso())
                     .orElseThrow(() -> new RuntimeException("Curso no encontrado con nombre: " + request.getCurso()));
             seccionExistente.setCurso(curso);
         }

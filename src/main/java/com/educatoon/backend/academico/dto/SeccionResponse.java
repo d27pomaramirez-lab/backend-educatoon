@@ -1,5 +1,5 @@
 // Puedes crear un nuevo archivo SeccionResponse.java
-package com.educatoon.backend.usuarios.dto;
+package com.educatoon.backend.academico.dto;
 
 import java.util.UUID;
 import lombok.Data;

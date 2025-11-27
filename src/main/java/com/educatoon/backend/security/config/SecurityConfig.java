@@ -57,6 +57,7 @@ public class SecurityConfig {
             .requestMatchers("/uploads/**").permitAll()
             .requestMatchers("/api/perfil/foto/**").permitAll()
             .requestMatchers("/api/auth/**").permitAll()
+            .requestMatchers("/api/cursos/**").hasAnyAuthority("ROL_COORDINADOR")
             .requestMatchers("/api/coordinador/**").hasAnyAuthority("ROL_COORDINADOR")
             .requestMatchers("/api/admin/**").hasAuthority("ROL_ADMINISTRADOR") 
             .anyRequest().authenticated()

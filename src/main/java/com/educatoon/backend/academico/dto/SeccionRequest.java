@@ -1,5 +1,5 @@
 
-package com.educatoon.backend.usuarios.dto;
+package com.educatoon.backend.academico.dto;
 
 import lombok.AllArgsConstructor;
 import lombok.Builder;

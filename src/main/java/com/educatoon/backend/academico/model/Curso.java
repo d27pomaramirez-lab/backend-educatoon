@@ -1,5 +1,5 @@
 
-package com.educatoon.backend.usuarios.model;
+package com.educatoon.backend.academico.model;
 
 import com.educatoon.backend.utils.AuditBase;
 import jakarta.persistence.Column;
