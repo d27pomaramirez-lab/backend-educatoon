@@ -1,5 +1,7 @@
 package com.educatoon.backend.asesorias.service;
 
+import com.educatoon.backend.academico.model.Curso;
+import com.educatoon.backend.academico.repository.CursoRepository;
 import com.educatoon.backend.asesorias.dto.ActualizarAsesoriaRequest;
 import com.educatoon.backend.asesorias.dto.AsesoriaResponse;
 import com.educatoon.backend.asesorias.dto.CrearAsesoriaRequest;
@@ -26,6 +28,7 @@ public class AsesoriaService {
     @Autowired private AsesoriaRepository asesoriaRepository;
     @Autowired private EstudianteRepository estudianteRepository;
     @Autowired private DocenteRepository docenteRepository;
+    @Autowired private CursoRepository cursoRepository;
     
     public List<AsesoriaResponse> listarAsesorias(){
         List<Asesoria> lista = asesoriaRepository.findAllCompleto();
@@ -67,9 +70,12 @@ public class AsesoriaService {
                  asesoria.getDocente().getUsuario().getPerfil().getApellidos()
              );
         }
-
-        return response;    
-    }        
+        
+        if (asesoria.getCurso() != null) {
+            response.setNombreCurso(asesoria.getCurso().getNombre());
+        }
+            return response;    
+        }        
     
     @Transactional
     public Asesoria crearAsesoria(CrearAsesoriaRequest request){
@@ -79,10 +85,13 @@ public class AsesoriaService {
         Docente docente = docenteRepository.findById(request.getDocenteId())
                 .orElseThrow(()-> new RuntimeException("Docente no encontrado con ID: " + request.getDocenteId()));
         
+        Curso curso = cursoRepository.findById(request.getCursoId())
+            .orElseThrow(() -> new RuntimeException("Curso no encontrado con ID: " + request.getCursoId()));
+        
         Asesoria nuevaAsesoria = Asesoria.builder()
                 .estudiante(estudiante)
                 .docente(docente)
-                .cursoId(request.getCursoId())
+                .curso(curso)
                 .fecha(request.getFecha())
                 .duracionMinutos(request.getDuracionMinutos())
                 .modalidad(request.getModalidad())
@@ -132,5 +141,33 @@ public class AsesoriaService {
         asesoriaRepository.save(asesoria);
     }
     
+    public List<AsesoriaResponse> listarAsesoriasPorDocente(UUID docenteId) {
+        List<Asesoria> asesorias = asesoriaRepository.findByDocenteId(docenteId);
+        return asesorias.stream().map(this::convertirAAsesoriaResponse).collect(Collectors.toList());
+    }
+    
+    @Transactional
+    public String cambiarEstadoPorDocente(UUID asesoriaId, String nuevoEstado) {
+        Asesoria asesoria = asesoriaRepository.findById(asesoriaId)
+                .orElseThrow(() -> new RuntimeException("Asesoría no encontrada con ID: " + asesoriaId));
+
+        if (!asesoria.getEstado().equals("PROGRAMADA")) {
+            throw new RuntimeException("Solo se pueden cambiar el estado de asesorías 'PROGRAMADA'. Estado actual: " + asesoria.getEstado());
+        }
+
+        if (!nuevoEstado.equals("REALIZADA") && !nuevoEstado.equals("CANCELADA")) {
+             throw new RuntimeException("Estado no permitido. Solo se acepta 'REALIZADA' o 'CANCELADA'.");
+        }
+
+        asesoria.setEstado(nuevoEstado);
+        asesoriaRepository.save(asesoria);
+
+        return "El estado de la asesoría ha cambiado a " + nuevoEstado + " exitosamente.";
+    }
+    
+    public List<AsesoriaResponse> listarAsesoriasPorEstudiante(UUID estudianteId) {
+        List<Asesoria> asesorias = asesoriaRepository.findByEstudianteId(estudianteId);
+        return asesorias.stream().map(this::convertirAAsesoriaResponse).collect(Collectors.toList());
+    }
     
 }

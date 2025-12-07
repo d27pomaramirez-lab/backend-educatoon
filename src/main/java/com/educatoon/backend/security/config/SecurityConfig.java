@@ -18,7 +18,6 @@ import org.springframework.web.cors.CorsConfiguration;
 import org.springframework.web.cors.CorsConfigurationSource;
 import org.springframework.web.cors.UrlBasedCorsConfigurationSource;
 import java.util.List;
-import static org.springframework.security.config.Customizer.withDefaults;
 
 /**
  *
@@ -57,8 +56,10 @@ public class SecurityConfig {
             .requestMatchers("/uploads/**").permitAll()
             .requestMatchers("/api/perfil/foto/**").permitAll()
             .requestMatchers("/api/auth/**").permitAll()
-            .requestMatchers("/api/cursos/**").hasAnyAuthority("ROL_COORDINADOR")
+            .requestMatchers("/api/cursos/**").hasAnyAuthority("ROL_COORDINADOR", "ROL_ADMINISTRADOR")
             .requestMatchers("/api/coordinador/**").hasAnyAuthority("ROL_COORDINADOR")
+            .requestMatchers("/api/docente/**").hasAnyAuthority("ROL_DOCENTE")
+            .requestMatchers("/api/estudiante/**").hasAnyAuthority("ROL_ESTUDIANTE")
             .requestMatchers("/api/admin/**").hasAuthority("ROL_ADMINISTRADOR") 
             .anyRequest().authenticated()
         )

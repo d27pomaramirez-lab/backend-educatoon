@@ -9,6 +9,8 @@ import jakarta.persistence.GenerationType;
 import jakarta.persistence.Id;
 import jakarta.persistence.Table;
 import java.util.UUID;
+import lombok.AllArgsConstructor;
+import lombok.Builder;
 import lombok.Data;
 import lombok.NoArgsConstructor;
 
@@ -17,10 +19,12 @@ import lombok.NoArgsConstructor;
  * @author hecto
  */
 
+@Data 
+@Builder
+@AllArgsConstructor
 @Entity
 @NoArgsConstructor
 @Table(name = "cursos")
-@Data 
 public class Curso extends AuditBase{
     @Id
     @GeneratedValue(strategy = GenerationType.UUID)

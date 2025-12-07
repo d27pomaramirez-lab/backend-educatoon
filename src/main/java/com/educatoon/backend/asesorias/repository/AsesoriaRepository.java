@@ -20,9 +20,10 @@ public interface AsesoriaRepository extends JpaRepository<Asesoria, UUID>{
             + "LEFT JOIN FETCH u.perfil p " // traemos su perfil
             + "LEFT JOIN FETCH a.docente d "
             + "LEFT JOIN FETCH d.usuario du " //traemos el usuario del docente
+            + "LEFT JOIN FETCH a.curso c "
             + "LEFT JOIN FETCH du.perfil dp") //traemos su perfil
     List<Asesoria> findAllCompleto();
-    
+      
     List<Asesoria> findByEstudianteId(UUID estudianteId);
     List<Asesoria> findByDocenteId(UUID docenteId);
 }

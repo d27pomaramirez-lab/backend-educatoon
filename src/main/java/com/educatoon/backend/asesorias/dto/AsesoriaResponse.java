@@ -21,6 +21,7 @@ public class AsesoriaResponse {
     
     private String nombreEstudiante;
     private String nombreDocente;
+    private String nombreCurso;
     private String tema;
     private Date fecha;
     private Integer duracionMinutos;

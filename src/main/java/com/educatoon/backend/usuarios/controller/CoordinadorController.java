@@ -85,9 +85,7 @@ public class CoordinadorController {
         } catch (RuntimeException e) {
             return ResponseEntity.badRequest().body(e.getMessage());
         }
-    }
-    
-    
+    }        
     
     @PostMapping("/registrar-seccion")
     public ResponseEntity<?> registrarSeccion(@RequestBody SeccionRequest request){

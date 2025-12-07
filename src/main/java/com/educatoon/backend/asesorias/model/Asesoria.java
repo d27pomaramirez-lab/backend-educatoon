@@ -1,6 +1,7 @@
 
 package com.educatoon.backend.asesorias.model;
 
+import com.educatoon.backend.academico.model.Curso;
 import com.educatoon.backend.usuarios.model.Docente;
 import com.educatoon.backend.usuarios.model.Estudiante;
 import com.educatoon.backend.utils.AuditBase;
@@ -47,10 +48,9 @@ public class Asesoria extends AuditBase{
     @JoinColumn(name = "docente_id", nullable = false)
     private Docente docente;
     
-    //@ManyToOne
-    //@JoinColumn(name = "curso_id", nullable = false)
-    @Column(name = "curso_id", nullable = false)
-    private UUID cursoId;
+    @ManyToOne
+    @JoinColumn(name = "curso_id", nullable = false)
+    private Curso curso;
     
     @Column(name = "fecha")
     @Temporal(TemporalType.DATE)

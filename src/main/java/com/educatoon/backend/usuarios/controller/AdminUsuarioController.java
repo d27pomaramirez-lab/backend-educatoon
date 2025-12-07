@@ -1,4 +1,3 @@
-
 package com.educatoon.backend.usuarios.controller;
 
 import com.educatoon.backend.usuarios.dto.ActualizarUsuarioRequest;
@@ -17,10 +16,10 @@ import org.springframework.http.HttpStatus;
  *
  * @author Diego
  */
-
 @RestController
 @RequestMapping("/api/admin/usuarios")
 public class AdminUsuarioController {
+
     @Autowired
     private UsuarioService usuarioService;
 
@@ -28,7 +27,7 @@ public class AdminUsuarioController {
     public List<UsuarioPendienteResponse> getUsuariosPendientes() {
         return usuarioService.getUsuariosPendientes();
     }
-    
+
     @GetMapping("/todos")
     public List<UsuarioPendienteResponse> getTodosLosUsuarios() {
         return usuarioService.getTodosLosUsuarios();
@@ -43,7 +42,7 @@ public class AdminUsuarioController {
             return new ResponseEntity<>(e.getMessage(), HttpStatus.NOT_FOUND);
         }
     }
-    
+
     @PostMapping("/crear")
     public ResponseEntity<?> crearUsuario(@RequestBody AdminCrearUsuarioRequest request) {
         try {
@@ -53,17 +52,21 @@ public class AdminUsuarioController {
             return new ResponseEntity<>(e.getMessage(), HttpStatus.BAD_REQUEST);
         }
     }
-    
-    @DeleteMapping("/desactivar/{id}")
-    public ResponseEntity<?> desactivarUsuario(@PathVariable UUID id) {
+
+    @PutMapping("/estado/{id}")
+    public ResponseEntity<?> cambiarEstadoUsuario(@PathVariable UUID id, @RequestParam boolean enabled) {
         try {
-            usuarioService.desactivarUsuario(id);
-            return ResponseEntity.ok("Usuario desactivado exitosamente.");
+            // Llamas a un servicio unificado que maneja el cambio
+            usuarioService.cambiarEstado(id, enabled);
+
+            String mensaje = enabled ? "Usuario activado exitosamente." : "Usuario desactivado exitosamente.";
+            return ResponseEntity.ok(mensaje);
+
         } catch (RuntimeException e) {
             return new ResponseEntity<>(e.getMessage(), HttpStatus.NOT_FOUND);
         }
     }
-    
+
     @GetMapping("/{id}")
     public ResponseEntity<?> getUsuarioById(@PathVariable UUID id) {
         try {
@@ -73,16 +76,15 @@ public class AdminUsuarioController {
             return new ResponseEntity<>(e.getMessage(), HttpStatus.NOT_FOUND);
         }
     }
-    
+
     @PutMapping("/actualizar/{id}")
     public ResponseEntity<?> actualizarUsuario(@PathVariable UUID id, @RequestBody ActualizarUsuarioRequest request) {
         try {
             usuarioService.actualizarUsuario(id, request);
             return ResponseEntity.ok("Usuario actualizado exitosamente.");
-        } catch (RuntimeException e) {            
+        } catch (RuntimeException e) {
             return new ResponseEntity<>(e.getMessage(), HttpStatus.BAD_REQUEST);
         }
     }
-    
-    
+
 }

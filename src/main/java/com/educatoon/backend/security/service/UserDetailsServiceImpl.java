@@ -2,9 +2,9 @@ package com.educatoon.backend.security.service;
 
 import com.educatoon.backend.usuarios.model.Usuario;
 import com.educatoon.backend.usuarios.repository.UsuarioRepository;
+import com.educatoon.backend.utils.CustomUserDetails;
 import java.util.HashSet;
 import org.springframework.beans.factory.annotation.Autowired;
-import org.springframework.security.core.userdetails.User;
 import org.springframework.security.core.userdetails.UserDetails;
 import org.springframework.security.core.userdetails.UserDetailsService;
 import org.springframework.security.core.userdetails.UsernameNotFoundException;
@@ -35,13 +35,11 @@ public class UserDetailsServiceImpl implements UserDetailsService {
         Set<GrantedAuthority> authorities = new HashSet<>();
         authorities.add(new SimpleGrantedAuthority(usuario.getRol().getNombre()));
 
-        return new User(
+        return new CustomUserDetails(
+            usuario.getId(),
             usuario.getEmail(),
             usuario.getPassword(),
             usuario.isEnabled(), 
-            true, 
-            true,
-            true, 
             authorities
         );
     }

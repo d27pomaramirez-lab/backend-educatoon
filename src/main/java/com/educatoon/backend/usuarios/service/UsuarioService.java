@@ -1,4 +1,3 @@
-
 package com.educatoon.backend.usuarios.service;
 
 import com.educatoon.backend.usuarios.dto.ActualizarUsuarioRequest;
@@ -28,64 +27,70 @@ import com.educatoon.backend.usuarios.dto.UsuarioPendienteResponse;
  *
  * @author Diego
  */
-
 @Service
 public class UsuarioService {
-    @Autowired private UsuarioRepository usuarioRepository;
-    @Autowired private RolRepository rolRepository;    
-    @Autowired private PerfilRepository perfilRepository;
-    @Autowired private EstudianteRepository estudianteRepository;
-    @Autowired private DocenteRepository docenteRepository;
-    
-    @Autowired private PasswordEncoder passwordEncoder;
-    
+
+    @Autowired
+    private UsuarioRepository usuarioRepository;
+    @Autowired
+    private RolRepository rolRepository;
+    @Autowired
+    private PerfilRepository perfilRepository;
+    @Autowired
+    private EstudianteRepository estudianteRepository;
+    @Autowired
+    private DocenteRepository docenteRepository;
+
+    @Autowired
+    private PasswordEncoder passwordEncoder;
+
     @Transactional
-    public Usuario solicitarRegistroEstudiante(RegistroEstudianteRequest request){
-        if(usuarioRepository.findByEmail(request.getEmail()).isPresent()){
+    public Usuario solicitarRegistroEstudiante(RegistroEstudianteRequest request) {
+        if (usuarioRepository.findByEmail(request.getEmail()).isPresent()) {
             throw new RuntimeException("Error: El email ya está en uso!");
         }
-        
+
         Rol rolEstudiante = rolRepository.findByNombre("ROL_ESTUDIANTE").
                 orElseThrow(() -> new RuntimeException("Error: Rol 'ROL_ESTUDIANTE' no econtrado."));
-        
+
         Usuario nuevoUsuario = new Usuario();
         nuevoUsuario.setEmail(request.getEmail());
         nuevoUsuario.setPassword(passwordEncoder.encode(request.getPassword()));
         nuevoUsuario.setRol(rolEstudiante);
-        nuevoUsuario.setEnabled(false);        
+        nuevoUsuario.setEnabled(false);
         Usuario usuarioGuardado = usuarioRepository.save(nuevoUsuario);
-        
+
         Perfil nuevoPerfil = new Perfil();
         nuevoPerfil.setNombres(request.getNombres());
         nuevoPerfil.setApellidos(request.getApellidos());
         nuevoPerfil.setDni(request.getDni());
         nuevoPerfil.setTelefono(request.getTelefono());
-        nuevoPerfil.setSexo(request.getSexo());                     
-        nuevoPerfil.setEstadoCivil(request.getEstadoCivil());      
+        nuevoPerfil.setSexo(request.getSexo());
+        nuevoPerfil.setEstadoCivil(request.getEstadoCivil());
         nuevoPerfil.setFechaNacimiento(request.getFechaNacimiento());
-        nuevoPerfil.setUsuario(usuarioGuardado);    
+        nuevoPerfil.setUsuario(usuarioGuardado);
         perfilRepository.save(nuevoPerfil);
-        
+
         Estudiante nuevoEstudiante = new Estudiante();
         nuevoEstudiante.setUsuario(usuarioGuardado);
         nuevoEstudiante.setFechaMatricula(new Date());
-        nuevoEstudiante.setCarreraPostular(request.getCarreraPostular());   
-        nuevoEstudiante.setUniversidadPostular(request.getUniversidadPostular()); 
-        nuevoEstudiante.setColegioProcedencia(request.getColegioProcedencia());        
+        nuevoEstudiante.setCarreraPostular(request.getCarreraPostular());
+        nuevoEstudiante.setUniversidadPostular(request.getUniversidadPostular());
+        nuevoEstudiante.setColegioProcedencia(request.getColegioProcedencia());
         estudianteRepository.save(nuevoEstudiante);
-        
+
         return usuarioGuardado;
     }
-    
+
     @Transactional
     public Usuario aprobarUsuario(UUID id) {
         Usuario usuario = usuarioRepository.findById(id)
-            .orElseThrow(() -> new RuntimeException("Usuario no encontrado con id: " + id));
+                .orElseThrow(() -> new RuntimeException("Usuario no encontrado con id: " + id));
 
         if (usuario.getRol() != null && usuario.getRol().getNombre().equals("ROL_ESTUDIANTE")) {
 
             Estudiante estudiante = estudianteRepository.findById(id)
-                .orElseThrow(() -> new RuntimeException("Datos de estudiante no encontrados para el usuario: " + id));
+                    .orElseThrow(() -> new RuntimeException("Datos de estudiante no encontrados para el usuario: " + id));
 
             if (!estudiante.isDocumentosValidados()) {
                 throw new RuntimeException("Error: Los documentos de este estudiante aún no han sido validados por un Coordinador.");
@@ -99,34 +104,34 @@ public class UsuarioService {
         }
         usuario.setEnabled(true);
         return usuarioRepository.save(usuario);
-    }   
-    
+    }
+
     public List<UsuarioPendienteResponse> getUsuariosPendientes() {
         List<Usuario> usuariosInactivos = usuarioRepository.findByEnabled(false);
-        
+
         List<Usuario> soloPendientes = usuariosInactivos.stream()
-            .filter(usuario -> {
-                if (usuario.getRol() == null || !usuario.getRol().getNombre().equals("ROL_ESTUDIANTE")) {
-                    return false;
-                }               
-                Estudiante estudiante = estudianteRepository.findById(usuario.getId()).orElse(null);
-                
-                return (estudiante != null && estudiante.getCodigoEstudiante() == null);
-            })
-            .collect(Collectors.toList());
-            
+                .filter(usuario -> {
+                    if (usuario.getRol() == null || !usuario.getRol().getNombre().equals("ROL_ESTUDIANTE")) {
+                        return false;
+                    }
+                    Estudiante estudiante = estudianteRepository.findById(usuario.getId()).orElse(null);
+
+                    return (estudiante != null && estudiante.getCodigoEstudiante() == null);
+                })
+                .collect(Collectors.toList());
+
         return soloPendientes.stream()
-            .map(this::convertirAUsuarioPendienteDTO)
-            .collect(Collectors.toList());
+                .map(this::convertirAUsuarioPendienteDTO)
+                .collect(Collectors.toList());
     }
-    
+
     private UsuarioPendienteResponse convertirAUsuarioPendienteDTO(Usuario usuario) {
         UsuarioPendienteResponse dto = new UsuarioPendienteResponse();
 
         dto.setId(usuario.getId());
         dto.setEmail(usuario.getEmail());
         dto.setEnabled(usuario.isEnabled());
-        
+
         if (usuario.getRol() != null) {
             dto.setRolNombre(usuario.getRol().getNombre());
         }
@@ -159,22 +164,22 @@ public class UsuarioService {
         }
         return dto;
     }
-    
+
     @Transactional
-    public void validarDocumentos(UUID id){
+    public void validarDocumentos(UUID id) {
         Usuario usuario = usuarioRepository.findById(id)
                 .orElseThrow(() -> new RuntimeException("Usuario no encontrado con id: " + id));
-        if(usuario.getRol() == null || !usuario.getRol().getNombre().equals("ROL_ESTUDIANTE")){
-            throw new RuntimeException("Este usuario no es un estudiante");            
+        if (usuario.getRol() == null || !usuario.getRol().getNombre().equals("ROL_ESTUDIANTE")) {
+            throw new RuntimeException("Este usuario no es un estudiante");
         }
-        
+
         Estudiante estudiante = estudianteRepository.findById(id)
-                .orElseThrow(()-> new RuntimeException("Datos de estudiante no encontrados para el usuario: " + id));
-        
+                .orElseThrow(() -> new RuntimeException("Datos de estudiante no encontrados para el usuario: " + id));
+
         estudiante.setDocumentosValidados(true);
         estudianteRepository.save(estudiante);
     }
-    
+
     @Transactional
     public Usuario crearUsuarioAdmin(AdminCrearUsuarioRequest request) {
         if (usuarioRepository.findByEmail(request.getEmail()).isPresent()) {
@@ -182,7 +187,7 @@ public class UsuarioService {
         }
 
         Rol rol = rolRepository.findByNombre(request.getNombreRol())
-            .orElseThrow(() -> new RuntimeException("Error: Rol '" + request.getNombreRol() + "' no encontrado."));
+                .orElseThrow(() -> new RuntimeException("Error: Rol '" + request.getNombreRol() + "' no encontrado."));
 
         Usuario nuevoUsuario = new Usuario();
         nuevoUsuario.setEmail(request.getEmail());
@@ -196,8 +201,8 @@ public class UsuarioService {
         nuevoPerfil.setApellidos(request.getApellidos());
         nuevoPerfil.setDni(request.getDni());
         nuevoPerfil.setTelefono(request.getTelefono());
-        nuevoPerfil.setSexo(request.getSexo());                   
-        nuevoPerfil.setEstadoCivil(request.getEstadoCivil());       
+        nuevoPerfil.setSexo(request.getSexo());
+        nuevoPerfil.setEstadoCivil(request.getEstadoCivil());
         nuevoPerfil.setFechaNacimiento(request.getFechaNacimiento());
         nuevoPerfil.setUsuario(usuarioGuardado);
         perfilRepository.save(nuevoPerfil);
@@ -208,52 +213,54 @@ public class UsuarioService {
             nuevoDocente.setEspecialidad(request.getEspecialidad());
             docenteRepository.save(nuevoDocente);
         }
-        
+
         if (rol.getNombre().equals("ROL_ESTUDIANTE")) {
             Estudiante nuevoEstudiante = new Estudiante();
             nuevoEstudiante.setUsuario(usuarioGuardado);
             nuevoEstudiante.setFechaMatricula(new Date());
             nuevoEstudiante.setDocumentosValidados(true);
-            nuevoEstudiante.setCarreraPostular(request.getCarreraPostular());     
-            nuevoEstudiante.setUniversidadPostular(request.getUniversidadPostular()); 
-            nuevoEstudiante.setColegioProcedencia(request.getColegioProcedencia()); 
+            nuevoEstudiante.setCarreraPostular(request.getCarreraPostular());
+            nuevoEstudiante.setUniversidadPostular(request.getUniversidadPostular());
+            nuevoEstudiante.setColegioProcedencia(request.getColegioProcedencia());
             estudianteRepository.save(nuevoEstudiante);
         }
         return usuarioGuardado;
     }
-    
+
     public List<UsuarioPendienteResponse> getTodosLosUsuarios() {
         List<Usuario> usuarios = usuarioRepository.findAllAndFetchPerfil();
 
         return usuarios.stream()
-            .map(this::convertirAUsuarioPendienteDTO)
-            .collect(Collectors.toList());
+                .map(this::convertirAUsuarioPendienteDTO)
+                .collect(Collectors.toList());
     }
-    
+
     @Transactional
-    public void desactivarUsuario(UUID id) {
+    public void cambiarEstado(UUID id, boolean nuevoEstado) {
         Usuario usuario = usuarioRepository.findById(id)
-            .orElseThrow(() -> new RuntimeException("Usuario no encontrado con id: " + id));
-        usuario.setEnabled(false);
+                .orElseThrow(() -> new RuntimeException("Usuario no encontrado con ID: " + id));
+
+        // Lógica para establecer el nuevo estado
+        usuario.setEnabled(nuevoEstado);
         usuarioRepository.save(usuario);
     }
-    
+
     public UsuarioPendienteResponse getUsuarioById(UUID id) {
         Usuario usuario = usuarioRepository.findByIdAndFetchPerfil(id)
-            .orElseThrow(() -> new RuntimeException("Usuario no encontrado con id: " + id));
+                .orElseThrow(() -> new RuntimeException("Usuario no encontrado con id: " + id));
 
         return convertirAUsuarioPendienteDTO(usuario);
     }
-    
+
     @Transactional
     public Usuario actualizarUsuario(UUID id, ActualizarUsuarioRequest request) {
-        
+
         Usuario usuario = usuarioRepository.findByIdAndFetchPerfil(id)
-            .orElseThrow(() -> new RuntimeException("Usuario no encontrado con id: " + id));
+                .orElseThrow(() -> new RuntimeException("Usuario no encontrado con id: " + id));
 
         if (request.getEmail() != null && !request.getEmail().isEmpty()) {
-            if (!usuario.getEmail().equals(request.getEmail()) && 
-                usuarioRepository.findByEmail(request.getEmail()).isPresent()) {
+            if (!usuario.getEmail().equals(request.getEmail())
+                    && usuarioRepository.findByEmail(request.getEmail()).isPresent()) {
                 throw new RuntimeException("Error: El nuevo email ya está en uso.");
             }
             usuario.setEmail(request.getEmail());
@@ -274,24 +281,24 @@ public class UsuarioService {
             perfil.setFechaNacimiento(request.getFechaNacimiento());
         }
 
-        if (usuario.getRol() != null) {            
+        if (usuario.getRol() != null) {
             if (usuario.getRol().getNombre().equals("ROL_ESTUDIANTE")) {
                 Estudiante estudiante = estudianteRepository.findById(id)
-                    .orElseThrow(() -> new RuntimeException("Datos de estudiante no encontrados para actualizar."));
-                
+                        .orElseThrow(() -> new RuntimeException("Datos de estudiante no encontrados para actualizar."));
+
                 estudiante.setCarreraPostular(request.getCarreraPostular());
                 estudiante.setUniversidadPostular(request.getUniversidadPostular());
                 estudiante.setColegioProcedencia(request.getColegioProcedencia());
             }
-            
+
             if (usuario.getRol().getNombre().equals("ROL_DOCENTE")) {
                 Docente docente = docenteRepository.findById(id)
-                    .orElseThrow(() -> new RuntimeException("Datos de docente no encontrados para actualizar."));
-                
+                        .orElseThrow(() -> new RuntimeException("Datos de docente no encontrados para actualizar."));
+
                 docente.setEspecialidad(request.getEspecialidad());
             }
         }
         return usuarioRepository.save(usuario);
     }
-    
+
 }
