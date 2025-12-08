@@ -2,6 +2,7 @@ package com.educatoon.backend.security.config;
 
 import com.educatoon.backend.security.jwt.JwtAuthenticationFilter;
 import com.educatoon.backend.security.service.UserDetailsServiceImpl;
+import java.util.Arrays;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.context.annotation.Bean;
 import org.springframework.context.annotation.Configuration;
@@ -57,6 +58,9 @@ public class SecurityConfig {
             .requestMatchers("/api/perfil/foto/**").permitAll()
             .requestMatchers("/api/auth/**").permitAll()
             .requestMatchers("/api/cursos/**").hasAnyAuthority("ROL_COORDINADOR", "ROL_ADMINISTRADOR")
+            .requestMatchers("/api/pruebas-entrada/**").permitAll()
+            .requestMatchers("/api/matriculas/**").permitAll()
+            .requestMatchers("/api/cursos/**").hasAnyAuthority("ROL_COORDINADOR")
             .requestMatchers("/api/coordinador/**").hasAnyAuthority("ROL_COORDINADOR")
             .requestMatchers("/api/docente/**").hasAnyAuthority("ROL_DOCENTE")
             .requestMatchers("/api/estudiante/**").hasAnyAuthority("ROL_ESTUDIANTE")
@@ -76,7 +80,15 @@ public class SecurityConfig {
         CorsConfiguration configuration = new CorsConfiguration();
         configuration.setAllowedOrigins(List.of("http://localhost:4200"));
         configuration.setAllowedMethods(List.of("GET", "POST", "PUT", "DELETE", "OPTIONS"));
-        configuration.setAllowedHeaders(List.of("Authorization", "Content-Type"));
+        configuration.setAllowedHeaders(Arrays.asList(
+            "Authorization", 
+            "Content-Type",
+            "X-Requested-With",
+            "Accept",
+            "Origin",
+            "Access-Control-Request-Method",
+            "Access-Control-Request-Headers"
+        ));
         UrlBasedCorsConfigurationSource source = new UrlBasedCorsConfigurationSource();
         source.registerCorsConfiguration("/**", configuration); 
 
