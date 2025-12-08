@@ -9,9 +9,14 @@ import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.stereotype.Service;
 
 import com.educatoon.backend.notas.dto.ProgresoResumenDTO;
-import com.educatoon.backend.notas.model.DetalleMatricula;
+import com.educatoon.backend.academico.model.DetalleMatricula;
 import com.educatoon.backend.notas.model.ProgresoAcademico;
-import com.educatoon.backend.notas.repository.DetalleMatriculaRepository;
+import com.educatoon.backend.usuarios.model.Docente;
+import com.educatoon.backend.usuarios.model.Estudiante;
+import com.educatoon.backend.usuarios.model.Perfil;
+import com.educatoon.backend.usuarios.model.Usuario;
+import com.educatoon.backend.usuarios.repository.EstudianteRepository;
+import com.educatoon.backend.academico.repository.DetalleMatriculaRepository;
 
 import org.springframework.transaction.annotation.Transactional;
 
@@ -20,10 +25,22 @@ public class ProgresoAcademicoService {
     @Autowired
     private DetalleMatriculaRepository detalleRepo;
 
+    @Autowired
+    private EstudianteRepository estudianteRepository;
+
+    @Transactional(readOnly = true)
+    public List<ProgresoResumenDTO> obtenerProgresoPorDni(String dni) {
+        Estudiante estudiante = estudianteRepository.findByUsuario_Perfil_Dni(dni)
+                .orElseThrow(() -> new RuntimeException("No se encontró ningún estudiante con el DNI: " + dni));
+        
+        // Reutilizamos el método existente pasando el ID encontrado
+        return obtenerProgresoPorEstudiante(estudiante.getId());
+    }
+
     @Transactional(readOnly = true)
     public List<ProgresoResumenDTO> obtenerProgresoPorEstudiante(UUID estudianteId) {
-        // 1. Obtener la data de la BD usando el método "mágico" de Spring Data
-        List<DetalleMatricula> detalles = detalleRepo.findByMatricula_EstudianteIdAndMatricula_Estado(estudianteId, "ACTIVA");
+        // Llamar al método con el nombre actualizado (Estudiante_Id en lugar de EstudianteId)
+        List<DetalleMatricula> detalles = detalleRepo.findByMatricula_Estudiante_IdAndMatricula_Estado(estudianteId, "ACTIVA");
 
         // 2. Flujo Alternativo: Si está vacío, retornamos lista vacía
         if (detalles.isEmpty()) {
@@ -43,6 +60,8 @@ public class ProgresoAcademicoService {
             if (detalle.getSeccion().getCurso() != null) {
                 dto.setNombreCurso(detalle.getSeccion().getCurso().getNombre());
             }
+
+            dto.setNombreDocente(getNombreCompletoFromDocente(detalle.getSeccion().getDocente()));
         }
 
         // Datos del Progreso (Manejo de Nulos por el LEFT JOIN implícito)
@@ -50,19 +69,28 @@ public class ProgresoAcademicoService {
             ProgresoAcademico pa = detalle.getProgresoAcademico();
             
             dto.setNotaParcial(pa.getNotaParcial());
+            dto.setNotaFinal(pa.getNotaFinal()); // Mapear nota final
+            dto.setPromedioSimulacros(pa.getPromedioSimulacros()); // Mapear promedio
+            
             dto.setAvance(pa.getAvancePorcentaje());
             dto.setObservaciones(pa.getObservaciones());
             dto.setUltimaActualizacion(pa.getUpdatedAt());
             
-            // Lógica de negocio: Calcular estado
-            if (pa.getNotaParcial() < 10.5) {
+            // Lógica de estado actualizada
+            if (pa.getNotaFinal() != null) {
+                // Si ya hay nota final, el estado depende de ella
+                dto.setEstado(pa.getNotaFinal() >= 10.5 ? "APROBADO" : "DESAPROBADO");
+            } else if (pa.getNotaParcial() < 10.5) {
                 dto.setEstado("EN RIESGO");
             } else {
                 dto.setEstado("SATISFACTORIO");
             }
+
         } else {
-            // Valores por defecto si no hay progreso registrado
+            // Valores por defecto
             dto.setNotaParcial(0.0);
+            dto.setNotaFinal(0.0); // Sin nota final
+            dto.setPromedioSimulacros(0.0);
             dto.setAvance(0.0);
             dto.setEstado("SIN CALIFICAR");
             dto.setObservaciones("El docente aún no ha registrado notas.");
@@ -70,6 +98,19 @@ public class ProgresoAcademicoService {
         }
         
         return dto;
+    }
+
+    private String getNombreCompletoFromDocente(Docente docente) {
+        if (docente == null) {
+            return "Sin asignar";
+        }
+        Usuario usuario = docente.getUsuario();
+        if (usuario != null && usuario.getPerfil() != null) {
+            Perfil perfil = usuario.getPerfil();
+            return perfil.getNombres() + " " + perfil.getApellidos();
+        } else {
+            return "Docente sin nombre";
+        }
     }
 
 }

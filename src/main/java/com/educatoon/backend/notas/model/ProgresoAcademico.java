@@ -1,9 +1,12 @@
 package com.educatoon.backend.notas.model;
 
-import java.math.BigDecimal;
 import java.time.LocalDateTime;
 import java.util.UUID;
 
+import org.hibernate.annotations.JdbcTypeCode;
+import org.hibernate.type.SqlTypes;
+
+import com.educatoon.backend.academico.model.DetalleMatricula; 
 import jakarta.persistence.Column;
 import jakarta.persistence.Entity;
 import jakarta.persistence.GeneratedValue;
@@ -36,8 +39,18 @@ public class ProgresoAcademico {
     @Column(name = "nota_parcial")
     private double notaParcial;
 
+    @Column(name = "nota_final")
+    private Double notaFinal; 
+
     @Column(name = "avance_porcentaje")
     private double avancePorcentaje;
+
+    @Column(name = "promedio_simulacros")
+    private double promedioSimulacros;
+
+    @JdbcTypeCode(SqlTypes.JSON)
+    @Column(name = "simulacros_detalle", columnDefinition = "jsonb")
+    private String simulacrosDetalle; // Guardamos el JSON como String
     
     @Column(name = "observaciones")
     private String observaciones;

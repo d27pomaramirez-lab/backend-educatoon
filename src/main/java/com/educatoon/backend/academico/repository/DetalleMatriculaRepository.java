@@ -10,6 +10,8 @@ package com.educatoon.backend.academico.repository;
  */
 
 import com.educatoon.backend.academico.model.DetalleMatricula;
+
+import org.springframework.data.jpa.repository.EntityGraph;
 import org.springframework.data.jpa.repository.JpaRepository;
 import org.springframework.data.jpa.repository.Query;
 import org.springframework.data.repository.query.Param;
@@ -51,4 +53,8 @@ public interface DetalleMatriculaRepository extends JpaRepository<DetalleMatricu
     
     // Buscar detalle específico por matrícula y sección
     Optional<DetalleMatricula> findByMatriculaIdAndSeccionId(UUID matriculaId, UUID seccionId);
+
+    // Busca donde se encuentra matriculado un estudiante
+    @EntityGraph(attributePaths = {"seccion", "seccion.curso", "progresoAcademico", "matricula"})
+    List<DetalleMatricula> findByMatricula_Estudiante_IdAndMatricula_Estado(UUID estudianteId, String estado);
 }

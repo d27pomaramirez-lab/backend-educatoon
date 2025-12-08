@@ -10,6 +10,7 @@ import jakarta.persistence.GenerationType;
 import jakarta.persistence.Id;
 import jakarta.persistence.JoinColumn;
 import jakarta.persistence.ManyToOne;
+import jakarta.persistence.OneToOne;
 import jakarta.persistence.Table;
 import java.math.BigDecimal;
 import java.time.LocalDateTime;
@@ -19,6 +20,8 @@ import lombok.Builder;
 import lombok.Data;
 import lombok.NoArgsConstructor;
 import org.hibernate.annotations.CreationTimestamp;
+
+import com.educatoon.backend.notas.model.ProgresoAcademico;
 
 /**
  *
@@ -54,6 +57,8 @@ public class DetalleMatricula {
     @Column(name = "created_at", updatable = false)
     private LocalDateTime createdAt;
     
+    @OneToOne(mappedBy = "detalleMatricula")
+    private ProgresoAcademico progresoAcademico;
 }
 
 //INSCRITO, RETIRADO, APROBADO, DESAPROBADO, EN_CURSO

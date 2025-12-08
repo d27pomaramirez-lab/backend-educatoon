@@ -22,18 +22,22 @@ public class ProgresoAcademicoController {
     @Autowired
     private ProgresoAcademicoService progresoService;
 
-    @GetMapping("/progreso-academico/{estudianteId}")
-    public ResponseEntity<?> consultarProgreso(@PathVariable UUID estudianteId) {
-        
-        List<ProgresoResumenDTO> progreso = progresoService.obtenerProgresoPorEstudiante(estudianteId);
+    @GetMapping("/progreso-academico/{dni}")
+    public ResponseEntity<?> consultarProgreso(@PathVariable String dni) {
+        try {
+            List<ProgresoResumenDTO> progreso = progresoService.obtenerProgresoPorDni(dni);
 
-        // Flujo Alternativo del Caso de Uso: "No existen registros"
-        if (progreso.isEmpty()) {
-            // Devolvemos un Map para que el JSON sea { "mensaje": "..." }
-            return ResponseEntity.status(HttpStatus.OK)
-                    .body(Map.of("mensaje", "No se encontraron cursos matriculados o registros de notas para este estudiante."));
+            if (progreso.isEmpty()) {
+                return ResponseEntity.status(HttpStatus.OK)
+                        .body(Map.of("mensaje", "No se encontraron cursos matriculados o registros de notas para este estudiante."));
+            }
+
+            return ResponseEntity.ok(progreso);
+            
+        } catch (RuntimeException e) {
+            // Manejo de error si el DNI no existe
+            return ResponseEntity.status(HttpStatus.NOT_FOUND)
+                    .body(Map.of("error", e.getMessage()));
         }
-
-        return ResponseEntity.ok(progreso);
     }
 }

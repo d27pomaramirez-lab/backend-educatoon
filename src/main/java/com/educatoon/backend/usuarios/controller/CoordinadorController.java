@@ -126,4 +126,28 @@ public class CoordinadorController {
             return new ResponseEntity<>(e.getMessage(), HttpStatus.NOT_FOUND);
         }
     }
+
+    @GetMapping("/buscar-secciones")
+    public ResponseEntity<List<SeccionResponse>> buscarSecciones(
+            @RequestParam(required = false) String general,
+            @RequestParam(required = false) String codigo,
+            @RequestParam(required = false) String curso) {
+        
+        List<SeccionResponse> resultados;
+
+        if (codigo != null && curso != null) {
+             resultados = seccionService.buscarPorCodigoYCurso(codigo, curso);
+        } 
+        else if (codigo != null) {
+            resultados = seccionService.buscarPorCodigo(codigo);
+        } else if (curso != null) {
+            resultados = seccionService.buscarPorCurso(curso);
+        } else if (general != null) {
+            resultados = seccionService.buscarGeneral(general);
+        } else {
+            resultados = seccionService.listarSecciones();
+        }
+
+        return ResponseEntity.ok(resultados);
+    }
 }

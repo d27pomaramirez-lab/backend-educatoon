@@ -46,7 +46,10 @@ public class SeccionService {
         Curso curso = cursoRepository.findByNombreIgnoreCase(request.getCurso()).
                 orElseThrow(() -> new RuntimeException("Curso no encontrado con nombre: " + request.getCurso()));
         
-        Docente docente = findDocenteByIdString(request.getDocente());
+        Docente docente = null;
+        if (request.getDocente() != null && !request.getDocente().isEmpty()) {
+            docente = findDocenteByNombreCompleto(request.getDocente());
+        }
 
         Seccion nuevaSeccion = new Seccion();
         
@@ -199,6 +202,38 @@ public class SeccionService {
         long nuevoNumero = totalSecciones + 1;
 
         return String.format("SEC%04d", nuevoNumero);
+    }
+
+    // Opción A: Búsqueda General (busca el texto en ambos campos)
+    @Transactional
+    public List<SeccionResponse> buscarGeneral(String criterio) {
+        List<Seccion> resultados = seccionRepository
+            .findByCodigoSeccionContainingIgnoreCaseOrCurso_NombreContainingIgnoreCase(criterio, criterio);
+            
+        return resultados.stream()
+            .map(this::convertirASeccionResponse)
+            .collect(Collectors.toList());
+    }
+
+    // Opción B: Buscar solo por Código
+    @Transactional
+    public List<SeccionResponse> buscarPorCodigo(String codigo) {
+        return seccionRepository.findByCodigoSeccionContainingIgnoreCase(codigo).stream()
+            .map(this::convertirASeccionResponse)
+            .collect(Collectors.toList());
+    }
+
+    // Opción C: Buscar solo por Curso
+    @Transactional
+    public List<SeccionResponse> buscarPorCurso(String nombreCurso) {
+        return seccionRepository.findByCurso_NombreContainingIgnoreCase(nombreCurso).stream()
+            .map(this::convertirASeccionResponse)
+            .collect(Collectors.toList());
+    }
+
+    public List<SeccionResponse> buscarPorCodigoYCurso(String codigo, String curso) {
+        return seccionRepository.findByCodigoSeccionContainingIgnoreCaseAndCurso_NombreContainingIgnoreCase(codigo, curso)
+            .stream().map(this::convertirASeccionResponse).collect(Collectors.toList());
     }
     
     public List<SeccionConHorariosDTO> obtenerSeccionesConHorarios() {

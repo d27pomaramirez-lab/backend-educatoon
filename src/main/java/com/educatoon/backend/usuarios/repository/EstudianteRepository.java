@@ -56,4 +56,6 @@ public interface EstudianteRepository extends JpaRepository<Estudiante, UUID> {
            "OR LOWER(e.codigoEstudiante) LIKE LOWER(:termino) " +
            "ORDER BY p.apellidos, p.nombres")
     List<Estudiante> busquedaRapida(@Param("termino") String termino, int pageable);
+
+    Optional<Estudiante> findByUsuario_Perfil_Dni(String dni);
 }
