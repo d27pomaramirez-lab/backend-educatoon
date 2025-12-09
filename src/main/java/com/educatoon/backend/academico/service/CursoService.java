@@ -60,6 +60,16 @@ public class CursoService {
                 .orElseThrow(() -> new RuntimeException("Curso no encontrado con ID: " + id));
         return mapToResponse(curso);
     }
+    
+    public List<CursoResponse> listarCursosPorDocente(UUID docenteId) {
+        // Llama al método del repositorio que usa la JPQL (findCursosByDocenteId)
+        List<Curso> cursos = cursoRepository.findCursosByDocenteId(docenteId);
+        
+        // Mapear las entidades Curso a sus DTOs de respuesta
+        return cursos.stream()
+                     .map(this::mapToResponse)
+                     .collect(Collectors.toList());
+    }
 
     @Transactional
     public CursoResponse actualizarCurso(UUID id, ActualizarCursoRequest request) {
