@@ -10,7 +10,7 @@ import com.educatoon.backend.usuarios.repository.EstudianteRepository;
 import com.educatoon.backend.usuarios.repository.PerfilRepository;
 import com.educatoon.backend.usuarios.repository.RolRepository;
 import com.educatoon.backend.usuarios.repository.UsuarioRepository;
-import jakarta.transaction.Transactional;
+import org.springframework.transaction.annotation.Transactional;
 import java.util.Date;
 import java.util.List;
 import java.util.UUID;
@@ -299,6 +299,22 @@ public class UsuarioService {
             }
         }
         return usuarioRepository.save(usuario);
+    }
+
+    @Transactional(readOnly = true)
+    public List<UsuarioPendienteResponse> buscarUsuarios(String nombreApellido, String nombreRol, Boolean enabled) {
+        String nombreApellidoClean = (nombreApellido != null && nombreApellido.isEmpty()) ? null : nombreApellido;
+        String nombreRolClean = (nombreRol != null && nombreRol.isEmpty()) ? null : nombreRol;
+
+        List<Usuario> usuarios = usuarioRepository.buscarUsuariosFiltrados(
+                nombreApellidoClean,
+                nombreRolClean,
+                enabled
+        );
+
+        return usuarios.stream()
+                .map(this::convertirAUsuarioPendienteDTO)
+                .collect(Collectors.toList());
     }
 
 }

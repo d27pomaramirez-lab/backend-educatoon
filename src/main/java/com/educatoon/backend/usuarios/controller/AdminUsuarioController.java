@@ -29,7 +29,14 @@ public class AdminUsuarioController {
     }
 
     @GetMapping("/todos")
-    public List<UsuarioPendienteResponse> getTodosLosUsuarios() {
+    public List<UsuarioPendienteResponse> getTodosLosUsuarios(
+            @RequestParam(required = false) String busqueda,
+            @RequestParam(required = false) String rol,
+            @RequestParam(required = false) Boolean estado
+    ) {
+        if (busqueda != null || rol != null || estado != null) {
+            return usuarioService.buscarUsuarios(busqueda, rol, estado);
+        }
         return usuarioService.getTodosLosUsuarios();
     }
 
