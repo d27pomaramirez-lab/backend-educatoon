@@ -8,6 +8,7 @@ import com.educatoon.backend.notas.dto.RegistroNotasRequest;
 import com.educatoon.backend.notas.model.ProgresoAcademico;
 import com.educatoon.backend.notas.repository.ProgresoAcademicoRepository;
 import com.educatoon.backend.usuarios.model.Perfil;
+import java.time.LocalDateTime;
 import java.util.List;
 import java.util.UUID;
 import java.util.stream.Collectors;
@@ -85,7 +86,7 @@ public class RegistroNotasService {
     @Transactional
     public void registrarNotas(RegistroNotasRequest request) {
         for (NotaEstudianteInput notaInput : request.getNotas()) {
-            
+
             // Validar que las notas estén entre 0 y 20
             validarRangoNota(notaInput.getNotaParcial(), "Parcial");
             validarRangoNota(notaInput.getNotaFinal(), "Final");
@@ -110,6 +111,8 @@ public class RegistroNotasService {
             if (notaInput.getObservaciones() != null) {
                 progreso.setObservaciones(notaInput.getObservaciones());
             }
+            
+            progreso.setUpdatedAt(LocalDateTime.now());
             
             progresoAcademicoRepository.save(progreso);
         }

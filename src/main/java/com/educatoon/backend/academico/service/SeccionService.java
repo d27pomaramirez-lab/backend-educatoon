@@ -1,5 +1,7 @@
 package com.educatoon.backend.academico.service;
 
+import com.educatoon.backend.academico.dto.EstudianteDTO;
+import com.educatoon.backend.academico.dto.EstudianteResumenDTO;
 import com.educatoon.backend.academico.dto.SeccionConHorariosDTO;
 import com.educatoon.backend.usuarios.dto.DocenteResponse;
 import com.educatoon.backend.academico.dto.SeccionRequest;
@@ -8,6 +10,7 @@ import com.educatoon.backend.academico.model.Curso;
 import com.educatoon.backend.academico.model.DetalleMatricula;
 import com.educatoon.backend.academico.model.Horario;
 import com.educatoon.backend.usuarios.model.Docente;
+import com.educatoon.backend.usuarios.model.Estudiante;
 import com.educatoon.backend.usuarios.model.Perfil;
 import com.educatoon.backend.academico.model.Seccion;
 import com.educatoon.backend.usuarios.model.Usuario;
@@ -121,6 +124,32 @@ public class SeccionService {
                     getNombreCompletoFromDocente(docente)
                 ))
                 .collect(Collectors.toList());
+    }
+
+    @Transactional
+    public List<EstudianteResumenDTO> listarEstudiantesPorSeccion(UUID seccionId) {
+        // Buscamos estudiantes con estado INSCRITO o EN_CURSO
+        List<DetalleMatricula> detalles = detalleMatriculaRepository.findBySeccionIdAndEstadoIn(
+            seccionId, 
+            Arrays.asList("INSCRITO", "EN_CURSO")
+        );
+        
+        return detalles.stream()
+            .map(this::convertirAEstudianteResumenDTO)
+            .collect(Collectors.toList());
+    }
+
+    private EstudianteResumenDTO convertirAEstudianteResumenDTO(DetalleMatricula detalle) {
+        Estudiante estudiante = detalle.getMatricula().getEstudiante();
+        Perfil perfil = estudiante.getUsuario().getPerfil();
+        
+        return EstudianteResumenDTO.builder()
+            .id(estudiante.getId())
+            .nombreCompleto(perfil.getApellidos() + ", " + perfil.getNombres())
+            .codigoEstudiante(estudiante.getCodigoEstudiante())
+            .fechaMatricula(java.sql.Date.valueOf(detalle.getMatricula().getFechaMatricula()))
+            .matriculadoActual(true)
+            .build();
     }
 
     private SeccionResponse convertirASeccionResponse(Seccion seccion) {

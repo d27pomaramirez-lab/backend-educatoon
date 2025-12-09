@@ -72,18 +72,31 @@ public class ProgresoAcademicoService {
             dto.setNotaFinal(pa.getNotaFinal()); // Mapear nota final
             dto.setPromedioSimulacros(pa.getPromedioSimulacros()); // Mapear promedio
             
-            dto.setAvance(pa.getAvancePorcentaje());
+            // CALCULO DEL AVANCE (0-100%) BASADO EN EL PROMEDIO (0-20)
+            double notaFinalSafe = pa.getNotaFinal() != null ? pa.getNotaFinal() : 0.0;
+            double promedio = (pa.getNotaParcial() + notaFinalSafe + pa.getPromedioSimulacros()) / 3;
+            
+            // Regla de tres: 20 es a 100%, Promedio es a X%
+            double porcentajeAvance = (promedio / 20.0) * 100.0;
+            dto.setAvance(Math.round(porcentajeAvance * 100.0) / 100.0);            
+
             dto.setObservaciones(pa.getObservaciones());
             dto.setUltimaActualizacion(pa.getUpdatedAt());
             
             // Lógica de estado actualizada
             if (pa.getNotaFinal() != null) {
-                // Si ya hay nota final, el estado depende de ella
-                dto.setEstado(pa.getNotaFinal() >= 10.5 ? "APROBADO" : "DESAPROBADO");
-            } else if (pa.getNotaParcial() < 10.5) {
-                dto.setEstado("EN RIESGO");
+                // Si ya hay nota final, el estado depende del PROMEDIO TOTAL de los 3 componentes
+                // (La variable 'promedio' ya fue calculada unas líneas arriba)
+                dto.setEstado(promedio >= 10.5 ? "APROBADO" : "DESAPROBADO");
             } else {
-                dto.setEstado("SATISFACTORIO");
+                // Si no hay nota final, evaluamos el desempeño parcial (Parcial + Simulacros)
+                double promedioTemporal = (pa.getNotaParcial() + pa.getPromedioSimulacros()) / 2;
+                
+                if (promedioTemporal < 10.5) {
+                    dto.setEstado("EN RIESGO");
+                } else {
+                    dto.setEstado("SATISFACTORIO");
+                }
             }
 
         } else {

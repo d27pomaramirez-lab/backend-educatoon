@@ -65,4 +65,7 @@ public interface DetalleMatriculaRepository extends JpaRepository<DetalleMatricu
     })
     List<DetalleMatricula> findBySeccionIdAndEstado(UUID seccionId, String estado);
 
+     // Buscar por múltiples estados (ej. INSCRITO, EN_CURSO)
+    @EntityGraph(attributePaths = {"matricula.estudiante.usuario.perfil"})
+    List<DetalleMatricula> findBySeccionIdAndEstadoIn(UUID seccionId, List<String> estados);
 }

@@ -7,6 +7,9 @@ import com.educatoon.backend.usuarios.dto.DocenteResponse;
 import com.educatoon.backend.academico.dto.SeccionRequest;
 import com.educatoon.backend.academico.dto.SeccionResponse;
 import com.educatoon.backend.usuarios.service.UsuarioService;
+import com.educatoon.backend.academico.dto.EstudianteDTO;
+import com.educatoon.backend.academico.dto.EstudianteResumenDTO;
+
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.http.HttpStatus;
 import org.springframework.http.ResponseEntity;
@@ -124,6 +127,16 @@ public class CoordinadorController {
             return ResponseEntity.ok(seccionEliminada);
         } catch (RuntimeException e) {
             return new ResponseEntity<>(e.getMessage(), HttpStatus.NOT_FOUND);
+        }
+    }
+
+    @GetMapping("/secciones/{id}/estudiantes")
+    public ResponseEntity<List<EstudianteResumenDTO>> listarEstudiantesDeSeccion(@PathVariable UUID id) { // <--- CAMBIAR TIPO
+        try {
+            List<EstudianteResumenDTO> estudiantes = seccionService.listarEstudiantesPorSeccion(id);
+            return ResponseEntity.ok(estudiantes);
+        } catch (RuntimeException e) {
+            return ResponseEntity.notFound().build();
         }
     }
 
