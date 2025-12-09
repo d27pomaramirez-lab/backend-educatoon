@@ -19,6 +19,7 @@ public interface SeccionRepository extends JpaRepository<Seccion, UUID> {
     List<Seccion> findByCodigoSeccionContainingIgnoreCase(String codigo);
     
     List<Seccion> findByCurso_NombreContainingIgnoreCase(String nombreCurso);
+    List<Seccion> findByDocenteId(UUID docenteId);
 
     List<Seccion> findByCodigoSeccionContainingIgnoreCaseOrCurso_NombreContainingIgnoreCase(String codigo, String nombreCurso);
 

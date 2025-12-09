@@ -23,6 +23,7 @@ import jakarta.transaction.Transactional;
 import java.util.ArrayList;
 import java.util.Arrays;
 import java.util.List;
+import java.util.Optional;
 import java.util.UUID;
 import java.util.stream.Collectors;
 import org.springframework.beans.factory.annotation.Autowired;
@@ -285,14 +286,15 @@ public class SeccionService {
         // Obtener secciones ya inscritas por el estudiante
         List<Seccion> seccionesInscritas = detalleMatriculaRepository
             .findByEstudianteId(estudianteId).stream()
-            .filter(dm -> dm.getEstado() == "INSCRITO" || 
-                         dm.getEstado() == "EN_CURSO")
+            .filter(dm -> "INSCRITO".equals(dm.getEstado()) || 
+                    "EN_CURSO".equals(dm.getEstado()))
             .map(DetalleMatricula::getSeccion)
             .collect(Collectors.toList());
         
         // Obtener horarios actuales del estudiante
-        List<Horario> horariosEstudiante = horarioRepository
-            .findHorariosByEstudianteId(estudianteId);
+        List<Horario> horariosEstudiante = Optional.ofNullable(
+            horarioRepository.findHorariosByEstudianteId(estudianteId)
+        ).orElse(new ArrayList<>());
         
         for (Seccion seccion : todasSecciones) {
             // Validar capacidad

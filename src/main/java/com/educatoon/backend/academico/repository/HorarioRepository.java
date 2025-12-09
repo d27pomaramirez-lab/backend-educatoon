@@ -21,6 +21,8 @@ public interface HorarioRepository extends JpaRepository<Horario, UUID> {
     // Obtener horarios por sección
     List<Horario> findBySeccionId(UUID seccionId);
     
+    List<Horario> findBySeccionIdIn(List<UUID> seccionIds);
+    
     // Obtener horarios por estudiante (a través de sus matrículas)
     @Query("SELECT DISTINCT h FROM Horario h " +
            "JOIN h.seccion s " +

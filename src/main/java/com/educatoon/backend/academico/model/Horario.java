@@ -11,11 +11,17 @@ import lombok.Data;
 import java.time.LocalTime;
 import java.time.LocalDateTime;
 import java.util.UUID;
+import lombok.AllArgsConstructor;
+import lombok.Builder;
+import lombok.NoArgsConstructor;
 import org.hibernate.annotations.CreationTimestamp;
 
 @Entity
 @Table(name = "horarios")
 @Data
+@Builder
+@NoArgsConstructor
+@AllArgsConstructor
 public class Horario {
     
     @Id
