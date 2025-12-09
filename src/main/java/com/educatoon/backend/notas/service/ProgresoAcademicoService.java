@@ -42,12 +42,11 @@ public class ProgresoAcademicoService {
         // Llamar al método con el nombre actualizado (Estudiante_Id en lugar de EstudianteId)
         List<DetalleMatricula> detalles = detalleRepo.findByMatricula_Estudiante_IdAndMatricula_Estado(estudianteId, "ACTIVA");
 
-        // 2. Flujo Alternativo: Si está vacío, retornamos lista vacía
         if (detalles.isEmpty()) {
             return new ArrayList<>();
         }
 
-        // 3. Mapear a DTO
+        // Mapear a DTO
         return detalles.stream().map(this::convertirADTO).collect(Collectors.toList());
     }
 
@@ -64,7 +63,7 @@ public class ProgresoAcademicoService {
             dto.setNombreDocente(getNombreCompletoFromDocente(detalle.getSeccion().getDocente()));
         }
 
-        // Datos del Progreso (Manejo de Nulos por el LEFT JOIN implícito)
+        // Datos del Progreso 
         if (detalle.getProgresoAcademico() != null) {
             ProgresoAcademico pa = detalle.getProgresoAcademico();
             
@@ -72,11 +71,10 @@ public class ProgresoAcademicoService {
             dto.setNotaFinal(pa.getNotaFinal()); // Mapear nota final
             dto.setPromedioSimulacros(pa.getPromedioSimulacros()); // Mapear promedio
             
-            // CALCULO DEL AVANCE (0-100%) BASADO EN EL PROMEDIO (0-20)
+            // CALCULO DEL AVANCE 
             double notaFinalSafe = pa.getNotaFinal() != null ? pa.getNotaFinal() : 0.0;
             double promedio = (pa.getNotaParcial() + notaFinalSafe + pa.getPromedioSimulacros()) / 3;
             
-            // Regla de tres: 20 es a 100%, Promedio es a X%
             double porcentajeAvance = (promedio / 20.0) * 100.0;
             dto.setAvance(Math.round(porcentajeAvance * 100.0) / 100.0);            
 
@@ -85,11 +83,8 @@ public class ProgresoAcademicoService {
             
             // Lógica de estado actualizada
             if (pa.getNotaFinal() != null) {
-                // Si ya hay nota final, el estado depende del PROMEDIO TOTAL de los 3 componentes
-                // (La variable 'promedio' ya fue calculada unas líneas arriba)
-                dto.setEstado(promedio >= 10.5 ? "APROBADO" : "DESAPROBADO");
+                 dto.setEstado(promedio >= 10.5 ? "APROBADO" : "DESAPROBADO");
             } else {
-                // Si no hay nota final, evaluamos el desempeño parcial (Parcial + Simulacros)
                 double promedioTemporal = (pa.getNotaParcial() + pa.getPromedioSimulacros()) / 2;
                 
                 if (promedioTemporal < 10.5) {
