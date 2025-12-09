@@ -1,6 +1,7 @@
 
 package com.educatoon.backend.academico.repository;
 
+import com.educatoon.backend.academico.model.Curso;
 import com.educatoon.backend.academico.model.Seccion;
 
 import java.util.List;
@@ -22,4 +23,6 @@ public interface SeccionRepository extends JpaRepository<Seccion, UUID> {
     List<Seccion> findByCodigoSeccionContainingIgnoreCaseOrCurso_NombreContainingIgnoreCase(String codigo, String nombreCurso);
 
     List<Seccion> findByCodigoSeccionContainingIgnoreCaseAndCurso_NombreContainingIgnoreCase(String codigo, String nombreCurso);
+
+    long countByCurso(Curso curso);
 }
