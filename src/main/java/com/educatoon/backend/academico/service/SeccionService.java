@@ -56,7 +56,7 @@ public class SeccionService {
         nuevaSeccion.setCapacidad(request.getCapacidad());
         nuevaSeccion.setAula(request.getAula());
         
-        String codigoSeccion =  generarCodigoParaSeccion();
+        String codigoSeccion =  generarCodigoParaSeccion(curso);
 
         nuevaSeccion.setCodigoSeccion(codigoSeccion);
         nuevaSeccion.setDocente(docente);
@@ -196,12 +196,18 @@ public class SeccionService {
         }
     }
     
-    private String generarCodigoParaSeccion(){        
-        long totalSecciones = seccionRepository.count();
+    private String generarCodigoParaSeccion(Curso curso){        
+        // Obtener las 3 primeras letras del nombre del curso
+        String nombre = curso.getNombre();
+        String prefijo = (nombre.length() > 3 ? nombre.substring(0, 3) : nombre).toUpperCase();
         
-        long nuevoNumero = totalSecciones + 1;
+        // Contar cuántas secciones existen de ESTE curso específico
+        long totalSeccionesDelCurso = seccionRepository.countByCurso(curso);
+        
+        long nuevoNumero = totalSeccionesDelCurso + 1;
 
-        return String.format("SEC%04d", nuevoNumero);
+        // Formato: PRE-001 (Prefijo - Número con 3 dígitos)
+        return String.format("%s-%03d", prefijo, nuevoNumero);
     }
 
     // Opción A: Búsqueda General (busca el texto en ambos campos)

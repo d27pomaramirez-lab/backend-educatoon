@@ -57,4 +57,12 @@ public interface DetalleMatriculaRepository extends JpaRepository<DetalleMatricu
     // Busca donde se encuentra matriculado un estudiante
     @EntityGraph(attributePaths = {"seccion", "seccion.curso", "progresoAcademico", "matricula"})
     List<DetalleMatricula> findByMatricula_Estudiante_IdAndMatricula_Estado(UUID estudianteId, String estado);
+
+    // Busca estudiantes inscritos en una sección trayendo sus datos y progreso
+    @EntityGraph(attributePaths = {
+        "matricula.estudiante.usuario.perfil", 
+        "progresoAcademico"
+    })
+    List<DetalleMatricula> findBySeccionIdAndEstado(UUID seccionId, String estado);
+
 }
